@@ -1,0 +1,39 @@
+{
+    "name": "topdata/topdata-foundation-sw6",
+    "description": "With this plugin you can import demo data",
+    "version": "v1.0.0",
+    "type": "shopware-platform-plugin",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "TopData Software GmbH",
+            "homepage": "https://www.topdata.de",
+            "role": "Manufacturer"
+        }
+    ],
+    "require": {
+        "shopware/core": "6.5.* || 6.6.*"
+    },
+    "extra": {
+        "shopware-plugin-class": "Topdata\\TopdataFoundationSw6\\TopdataFoundationSw6",
+        "plugin-icon": "src/Resources/config/plugin.png",
+        "copyright": "(c) by TopData Software GmbH",
+        "label": {
+            "de-DE": "Topdata Topdata Foundation Sw6",
+            "en-GB": "Topdata Topdata Foundation Sw6"
+        },
+        "description": {
+            "de-DE": "Mit diesem Plugin k\u00f6nnen Sie Demo-Daten importieren",
+            "en-GB": "With this plugin you can import demo data"
+        },
+        "manufacturerLink": {
+            "de-DE": "https://www.topdata.de",
+            "en-GB": "https://www.topdata.de"
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Topdata\\TopdataFoundationSw6\\": "src/"
+        }
+    }
+}
