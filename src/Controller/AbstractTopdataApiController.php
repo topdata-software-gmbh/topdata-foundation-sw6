@@ -7,7 +7,6 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Abstract controller for Topdata API.
  * Provides common response methods for API controllers.
  *
  * 10/2024 created
