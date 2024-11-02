@@ -42,5 +42,13 @@ class PluginHelperService
     {
         return $this->parameterBag->get('kernel.active_plugins');
     }
+
+    /**
+     * 11/2024 created
+     */
+    public function isTopFeedPluginAvailable(): bool
+    {
+        return $this->isPluginActive('Topdata\TopdataTopFeedSW6\TopdataTopFeedSW6');
+    }
 }
 
