@@ -4,32 +4,43 @@ declare(strict_types=1);
 
 namespace Topdata\TopdataFoundationSW6\Service;
 
-use Shopware\Core\Kernel;
-use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
 /**
- * 04/2024 PluginHelper --> PluginHelperService
- * 11/2024 moved from TopdataConnectorSW6 to TopdataFoundationSW6
+ * Service for handling plugin-related operations
+ * 
+ * @since 04/2024 PluginHelper --> PluginHelperService
+ * @since 11/2024 moved from TopdataConnectorSW6 to TopdataFoundationSW6
+ * @since 11/2024 refactored to use ParameterBag
  */
 class PluginHelperService
 {
-    private $container;
-
-    public function __construct(ContainerBuilder $container)
-    {
-        $this->container = $container;
+    public function __construct(
+        private readonly ParameterBagInterface $parameterBag
+    ) {
     }
 
+    /**
+     * Check if a plugin is currently active
+     *
+     * @param string $pluginClass The fully qualified class name of the plugin
+     * @return bool True if the plugin is active, false otherwise
+     */
     public function isPluginActive(string $pluginClass): bool
     {
-        $activePlugins = $this->container->getParameter('kernel.active_plugins');
+        $activePlugins = $this->parameterBag->get('kernel.active_plugins');
 
         return isset($activePlugins[$pluginClass]);
     }
 
+    /**
+     * Get all active plugins
+     *
+     * @return array<string, mixed> Array of active plugins where key is plugin class name
+     */
     public function activePlugins(): array
     {
-        return $this->container->getParameter('kernel.active_plugins');
+        return $this->parameterBag->get('kernel.active_plugins');
     }
 }
 
