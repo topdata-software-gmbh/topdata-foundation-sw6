@@ -19,12 +19,12 @@
         "plugin-icon": "src/Resources/config/plugin.png",
         "copyright": "(c) by TopData Software GmbH",
         "label": {
-            "de-DE": "Topdata Topdata Foundation Sw6",
-            "en-GB": "Topdata Topdata Foundation Sw6"
+            "de-DE": "Topdata Topdata Foundation SW6",
+            "en-GB": "Topdata Topdata Foundation SW6"
         },
         "description": {
-            "de-DE": "Mit diesem Plugin k\u00f6nnen Sie Demo-Daten importieren",
-            "en-GB": "With this plugin you can import demo data"
+            "de-DE": "Basisplugin für Topdata Plugins",
+            "en-GB": "Base plugin for Topdata plugins"
         },
         "manufacturerLink": {
             "de-DE": "https://www.topdata.de",
