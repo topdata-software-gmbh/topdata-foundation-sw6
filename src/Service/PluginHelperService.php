@@ -50,5 +50,13 @@ class PluginHelperService
     {
         return $this->isPluginActive('Topdata\TopdataTopFeedSW6\TopdataTopFeedSW6');
     }
+
+    /**
+     * 11/2024 created
+     */
+    public function isWebserviceConnectorPluginAvailable(): bool
+    {
+        return $this->isPluginActive('Topdata\TopdataConnectorSW6\TopdataConnectorSW6');
+    }
 }
 
