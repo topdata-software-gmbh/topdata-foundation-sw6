@@ -1,7 +1,7 @@
 {
     "name": "topdata/topdata-foundation-sw6",
     "description": "With this plugin you can import demo data",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "type": "shopware-platform-plugin",
     "license": "MIT",
     "authors": [
@@ -23,7 +23,7 @@
             "en-GB": "Topdata Foundation SW6"
         },
         "description": {
-            "de-DE": "Basisplugin f\u00fcr Topdata Plugins",
+            "de-DE": "Basisplugin für Topdata Plugins",
             "en-GB": "Base plugin for Topdata plugins"
         },
         "manufacturerLink": {
