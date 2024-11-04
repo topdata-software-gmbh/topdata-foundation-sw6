@@ -4,8 +4,20 @@
            xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
 
     <services>
+
+        <!-- SERVICES -->
+        <service id="Topdata\TopdataFoundationSW6\Service\TopConfigService" autowire="true" />
         <service id="Topdata\TopdataFoundationSW6\Service\LocaleHelperService" autowire="true"/>
         <service id="Topdata\TopdataFoundationSW6\Service\ManufacturerService" autowire="true"/>
         <service id="Topdata\TopdataFoundationSW6\Service\PluginHelperService" autowire="true"/>
+
+
+
+        <!-- TWIG EXTENSIONS -->
+        <service id="Topdata\TopdataFoundationSW6\Twig\TopConfigTwigExtension" autowire="true">
+            <tag name="twig.extension"/>
+        </service>
+
+
     </services>
 </container>
