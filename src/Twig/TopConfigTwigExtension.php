@@ -71,7 +71,7 @@ class TopConfigTwigExtension extends AbstractExtension
      */
     public function topConfigTree(?string $pluginName = null)
     {
-        return $this->topConfigService->getConfigTree($pluginName);
+        return $this->topConfigService->getNestedConfig($pluginName);
     }
 
     /**

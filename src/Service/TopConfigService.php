@@ -123,7 +123,7 @@ class TopConfigService
      * Get the tree-structured configuration for a plugin
      * @throws RuntimeException if the plugin is not registered
      */
-    public function getConfigTree(?string $pluginName = null): array
+    public function getNestedConfig(?string $pluginName = null): array
     {
         // ---- special case: return all config trees
         if ($pluginName === null) {
