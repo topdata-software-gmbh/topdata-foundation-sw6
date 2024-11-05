@@ -1,0 +1,2 @@
+- Util classes for plugin configuration transformation
+- The idea is to be able to transform back and forth between the limited shopware6's `systemConfig` and topConfig
