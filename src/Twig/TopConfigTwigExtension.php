@@ -93,6 +93,7 @@ class TopConfigTwigExtension extends AbstractExtension
     {
         $flatConfig = $this->topConfigService->getFlatConfig($pluginName);
 
+        // return UtilToml::flatConfigToTomlV1($flatConfig);
         return UtilToml::flatConfigToToml($flatConfig);
     }
 

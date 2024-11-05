@@ -11,51 +11,68 @@ use TopdataSoftwareGmbH\Util\UtilDebug;
  */
 class UtilToml
 {
+//    /**
+//     * Convert flat config array to TOML string
+//     *
+//     * @param array $flatConfig Flat configuration array with dot notation keys
+//     * @return string TOML formatted string
+//     * @throws \RuntimeException
+//     */
+//    public static function flatConfigToTomlV1(array $flatConfig): string
+//    {
+//        try {
+//            $nested = UtilConfigTransformation::flatToNested($flatConfig);
+//            return self::_nestedToToml($nested);
+//        } catch (\Exception $e) {
+//            throw new \RuntimeException("Failed to convert configuration to TOML: " . $e->getMessage());
+//        }
+//    }
+
     /**
-     * Convert flat config array to TOML string
+     * Process configuration to TOML format
      *
-     * @param array $flatConfig Flat configuration array with dot notation keys
+     * @param array $config Configuration array
      * @return string TOML formatted string
-     * @throws \RuntimeException
      */
-    public static function flatConfigToToml(array $flatConfig): string
+    public static function flatConfigToToml(array $config): string
     {
-        try {
-            $nested = self::_flatToNested($flatConfig);
-            return self::convertArrayToToml($nested);
-        } catch (\Exception $e) {
-            throw new \RuntimeException("Failed to convert configuration to TOML: " . $e->getMessage());
-        }
-    }
+        $sections = [];
+        $result = '';
 
-
-    /**
-     * Convert flat array with dot notation to nested array structure
-     *
-     * @param array $flat Flat configuration array
-     * @return array Nested array structure
-     */
-    private static function _flatToNested(array $flat): array
-    {
-        $nested = [];
-
-        foreach ($flat as $key => $value) {
+        // Group by sections
+        foreach ($config as $key => $value) {
             $parts = explode('.', $key);
-            $current = &$nested;
+            $lastPart = array_pop($parts);
+            $section = implode('.', $parts);
 
-            foreach ($parts as $i => $part) {
-                if ($i === count($parts) - 1) {
-                    $current[$part] = $value;
-                } else {
-                    if (!isset($current[$part]) || !is_array($current[$part])) {
-                        $current[$part] = [];
-                    }
-                    $current = &$current[$part];
-                }
+            if (!isset($sections[$section])) {
+                $sections[$section] = [];
             }
+
+            $sections[$section][$lastPart] = $value;
         }
 
-        return $nested;
+        // Sort sections to ensure consistent output
+        ksort($sections);
+
+        // Process each section
+        foreach ($sections as $section => $values) {
+            if (!empty($section)) {
+                $result .= "[$section]\n";
+            }
+
+            // Sort values within section
+            ksort($values);
+
+            foreach ($values as $key => $value) {
+                $formattedValue = self::_formatValue($value);
+                $result .= "$key = $formattedValue\n";
+            }
+
+            $result .= "\n";
+        }
+
+        return rtrim($result);
     }
 
     /**
@@ -65,7 +82,7 @@ class UtilToml
      * @return string Formatted TOML value
      * @throws \InvalidArgumentException
      */
-    private static function formatValue(mixed $value): string
+    private static function _formatValue(mixed $value): string
     {
         if (is_bool($value)) {
             return $value ? 'true' : 'false';
@@ -89,25 +106,26 @@ class UtilToml
     /**
      * Convert nested array to TOML format
      *
-     * @param array $data Nested array data
+     * @param array $nested Nested array data
      * @param string $prefix Current key prefix
      * @return string TOML formatted string
+     * @throws \RuntimeException If the value cannot be formatted
      */
-    private static function convertArrayToToml(array $data, string $prefix = ''): string
+    private static function _nestedToToml(array $nested, string $prefix = ''): string
     {
         $output = '';
 
-        foreach ($data as $key => $value) {
+        foreach ($nested as $key => $value) {
             $fullKey = $prefix ? "$prefix.$key" : $key;
 
             if (is_array($value)) {
                 if (!empty($value)) {
                     $output .= "[$fullKey]\n";
-                    $output .= self::convertArrayToToml($value, '');
+                    $output .= self::_nestedToToml($value, '');
                 }
             } else {
                 try {
-                    $formattedValue = self::formatValue($value);
+                    $formattedValue = self::_formatValue($value);
                     $output .= "$key = $formattedValue\n";
                 } catch (\InvalidArgumentException $e) {
                     throw new \RuntimeException("Error formatting value for key '$fullKey': " . $e->getMessage());
@@ -117,4 +135,6 @@ class UtilToml
 
         return $output;
     }
+
+
 }

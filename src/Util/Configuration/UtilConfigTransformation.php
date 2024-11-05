@@ -52,7 +52,7 @@ class UtilConfigTransformation
      * Transforms a flat configuration array into a tree structure
      * First applies flat key mapping, then converts to tree structure
      *
-     * @param array $config Original configuration array
+     * @param array $originalConfig the original plugin configuration array from shopware's systemConfigService
      * @param array $mapping Mapping array where values can contain dots for tree structure
      * @param string $prefix Prefix to add to all transformed keys (default: '')
      * @param bool $preserveUnmapped Keep keys that don't have a mapping (default: true)
@@ -60,7 +60,7 @@ class UtilConfigTransformation
      * @return array Transformed configuration as tree structure
      */
     public static function transformConfigTree(
-        array  $config,
+        array  $originalConfig,
         array  $mapping,
         string $prefix = '',
         bool   $preserveUnmapped = true,
@@ -68,11 +68,24 @@ class UtilConfigTransformation
     ): array
     {
         // First transform using flat mapping with prefix
-        $transformed = self::transformConfigFlat($config, $mapping, $prefix, $preserveUnmapped, $sort);
+        $transformed = self::transformConfigFlat($originalConfig, $mapping, $prefix, $preserveUnmapped, $sort);
+        $result = self::flatToNested($transformed);
 
+        return $result;
+    }
+
+
+    /**
+     * 11/2024 created
+     *
+     * @param array $flatConfig the flat config with dot notation
+     * @return array the nested config
+     */
+    public static function flatToNested(array $flatConfig): array
+    {
         // Convert flat result to tree structure
         $result = [];
-        foreach ($transformed as $key => $value) {
+        foreach ($flatConfig as $key => $value) {
             $parts = explode(self::SEPARATOR, $key);
             $current = &$result;
             foreach ($parts as $i => $part) {
