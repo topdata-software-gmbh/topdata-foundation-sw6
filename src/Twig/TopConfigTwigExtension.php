@@ -3,6 +3,8 @@
 namespace Topdata\TopdataFoundationSW6\Twig;
 
 use Topdata\TopdataFoundationSW6\Exception\TopConfigNotFoundException;
+use Topdata\TopdataFoundationSW6\Util\Configuration\UtilToml;
+use TopdataSoftwareGmbH\Util\UtilDebug;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFunction;
 use Topdata\TopdataFoundationSW6\Service\TopConfigService;
@@ -27,6 +29,7 @@ class TopConfigTwigExtension extends AbstractExtension
             new TwigFunction('topConfigInt', [$this, 'topConfigInt']),
             new TwigFunction('topConfigTree', [$this, 'topConfigTree']),
             new TwigFunction('topConfigFlat', [$this, 'topConfigFlat']),
+            new TwigFunction('topConfigToml', [$this, 'topConfigToml']),
         ];
     }
 
@@ -75,9 +78,22 @@ class TopConfigTwigExtension extends AbstractExtension
      * TODO: make pluginName optional to get list of all plugins configs, each row
      *      prefixed with corresponding pluginName
      */
-    public function topConfigFlat(string $pluginName)
+    public function topConfigFlat(string $pluginName): array
     {
         return $this->topConfigService->getFlatConfig($pluginName);
+    }
+
+
+    /**
+     * Returns the config as toml
+     *
+     * 11/2024 created
+     */
+    public function topConfigToml(string $pluginName): string|null
+    {
+        $flatConfig = $this->topConfigService->getFlatConfig($pluginName);
+
+        return UtilToml::flatConfigToToml($flatConfig);
     }
 
 }

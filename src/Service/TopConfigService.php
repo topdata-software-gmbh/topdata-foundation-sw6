@@ -97,7 +97,8 @@ class TopConfigService
     }
 
     /**
-     * Get the flat configuration for a plugin
+     * Get the flat configuration for a plugin with dot notation
+     *
      * @throws RuntimeException if the plugin is not registered
      */
     public function getFlatConfig(string $pluginName): array
@@ -216,8 +217,8 @@ class TopConfigService
     public function _buildMappingIfNotExists(string $pluginName): void
     {
         if (!isset($this->configTrees[$pluginName])) {
-            $flat = $this->getFlatConfig($pluginName);
-            $this->configTrees[$pluginName] = $this->buildConfigTree($flat);
+            $flatConfig = $this->getFlatConfig($pluginName);
+            $this->configTrees[$pluginName] = $this->buildConfigTree($flatConfig);
         }
     }
 

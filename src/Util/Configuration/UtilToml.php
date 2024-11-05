@@ -4,40 +4,35 @@ declare(strict_types=1);
 
 namespace Topdata\TopdataFoundationSW6\Util\Configuration;
 
+use TopdataSoftwareGmbH\Util\UtilDebug;
+
 /**
  * 11/2024 created [untested]
  */
 class UtilToml
 {
-    private const DEFAULT_INDENT_SIZE = 2;
-    private const DEFAULT_INDENT_CHAR = ' ';
-
     /**
-     * Convert flat config array with dot notation keys to TOML string
+     * Convert flat config array to TOML string
      *
      * @param array $flatConfig Flat configuration array with dot notation keys
-     * @param int $indentSize Number of spaces for each indent level
-     * @param string $indentChar Character to use for indentation
      * @return string TOML formatted string
      * @throws \RuntimeException
      */
-    public static function flatConfigToToml(
-        array  $flatConfig,
-        int    $indentSize = self::DEFAULT_INDENT_SIZE,
-        string $indentChar = self::DEFAULT_INDENT_CHAR
-    ): string
+    public static function flatConfigToToml(array $flatConfig): string
     {
-        $nested = self::_flatToNested($flatConfig);
-
-        return self::convertArrayToToml($nested, 0, '', $indentSize, $indentChar);
+        try {
+            $nested = self::_flatToNested($flatConfig);
+            return self::convertArrayToToml($nested);
+        } catch (\Exception $e) {
+            throw new \RuntimeException("Failed to convert configuration to TOML: " . $e->getMessage());
+        }
     }
 
 
     /**
-     * TODO: somewhere else we have this already implemented
      * Convert flat array with dot notation to nested array structure
      *
-     * @param array $flat Flat configuration array with dot notation keys
+     * @param array $flat Flat configuration array
      * @return array Nested array structure
      */
     private static function _flatToNested(array $flat): array
@@ -95,36 +90,25 @@ class UtilToml
      * Convert nested array to TOML format
      *
      * @param array $data Nested array data
-     * @param int $depth Current depth level
      * @param string $prefix Current key prefix
-     * @param int $indentSize Number of spaces for each indent level
-     * @param string $indentChar Character to use for indentation
      * @return string TOML formatted string
      */
-    private static function convertArrayToToml(
-        array  $data,
-        int    $depth = 0,
-        string $prefix = '',
-        int    $indentSize = self::DEFAULT_INDENT_SIZE,
-        string $indentChar = self::DEFAULT_INDENT_CHAR
-    ): string
+    private static function convertArrayToToml(array $data, string $prefix = ''): string
     {
         $output = '';
-        $indent = str_repeat($indentChar, $depth * $indentSize);
 
         foreach ($data as $key => $value) {
             $fullKey = $prefix ? "$prefix.$key" : $key;
 
             if (is_array($value)) {
                 if (!empty($value)) {
-                    $output .= "$indent[$fullKey]\n";
-                    $output .= self::convertArrayToToml($value, $depth + 1, '', $indentSize, $indentChar);
-                    $output .= "\n";
+                    $output .= "[$fullKey]\n";
+                    $output .= self::convertArrayToToml($value, '');
                 }
             } else {
                 try {
                     $formattedValue = self::formatValue($value);
-                    $output .= "$indent$key = $formattedValue\n";
+                    $output .= "$key = $formattedValue\n";
                 } catch (\InvalidArgumentException $e) {
                     throw new \RuntimeException("Error formatting value for key '$fullKey': " . $e->getMessage());
                 }
