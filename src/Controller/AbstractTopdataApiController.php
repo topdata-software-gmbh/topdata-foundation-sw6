@@ -19,7 +19,7 @@ abstract class AbstractTopdataApiController extends AbstractController
      * @param mixed $payload The payload to include in the response.
      * @return JsonResponse The JSON response with the payload.
      */
-    protected function payloadResponse($payload): JsonResponse
+    protected function payloadResponse(mixed $payload): JsonResponse
     {
         $body = [
             'success' => true,
@@ -36,7 +36,7 @@ abstract class AbstractTopdataApiController extends AbstractController
      * @param mixed $payload The payload to include in the response.
      * @return JsonResponse The JSON response with the message and payload.
      */
-    protected function successResponse(?string $message = null, $payload = null): JsonResponse
+    protected function successResponse(?string $message = null, mixed $payload = null): JsonResponse
     {
         $body = [
             'success' => true,
@@ -55,7 +55,7 @@ abstract class AbstractTopdataApiController extends AbstractController
      * @param mixed $payload The payload to include in the response.
      * @return JsonResponse The JSON response with the error message and payload.
      */
-    protected function errorResponse(?string $errorMessage = null, int $httpCode = Response::HTTP_INTERNAL_SERVER_ERROR, $payload = null): JsonResponse
+    protected function errorResponse(?string $errorMessage = null, int $httpCode = Response::HTTP_INTERNAL_SERVER_ERROR, mixed $payload = null): JsonResponse
     {
         $body = [
             'success' => false,
