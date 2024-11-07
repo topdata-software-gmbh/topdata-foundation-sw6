@@ -23,11 +23,11 @@ class TopConfigTwigExtension extends AbstractExtension
     public function getFunctions(): array
     {
         return [
-            new TwigFunction('topConfig', [$this, 'topConfig']),
-            new TwigFunction('topConfigString', [$this, 'topConfigString']),
-            new TwigFunction('topConfigBool', [$this, 'topConfigBool']),
-            new TwigFunction('topConfigInt', [$this, 'topConfigInt']),
-            new TwigFunction('topConfigTree', [$this, 'topConfigTree']),
+            new TwigFunction('topConfigGet', [$this, 'topConfigGet']),
+            new TwigFunction('topConfigGetString', [$this, 'topConfigGetString']),
+            new TwigFunction('topConfigGetBool', [$this, 'topConfigGetBool']),
+            new TwigFunction('topConfigGetInt', [$this, 'topConfigGetInt']),
+            new TwigFunction('topConfigNested', [$this, 'topConfigNested']),
             new TwigFunction('topConfigFlat', [$this, 'topConfigFlat']),
             new TwigFunction('topConfigToml', [$this, 'topConfigToml']),
         ];
@@ -35,12 +35,13 @@ class TopConfigTwigExtension extends AbstractExtension
 
     /**
      * Get an uncasted configuration value
+     * TODO: rename to topConfigGet
      *
      * @throws TopConfigNotFoundException when key is not found
      */
-    public function topConfig(string $pluginName, string $key)
+    public function topConfigGet(string $pluginName, string $dotKey)
     {
-        return $this->topConfigRegistry->get($pluginName, $key);
+        return $this->topConfigRegistry->getTopConfig($pluginName)->get($dotKey);
     }
 
     /**
@@ -48,9 +49,9 @@ class TopConfigTwigExtension extends AbstractExtension
      *
      * @throws TopConfigNotFoundException when key is not found
      */
-    public function topConfigString(string $pluginName, string $key): string
+    public function topConfigGetString(string $pluginName, string $dotKey): string
     {
-        return $this->topConfigRegistry->getString($pluginName, $key);
+        return $this->topConfigRegistry->getTopConfig($pluginName)->getString($dotKey);
     }
 
 
@@ -59,9 +60,20 @@ class TopConfigTwigExtension extends AbstractExtension
      *
      * @throws TopConfigNotFoundException when key is not found
      */
-    public function topConfigBool(string $pluginName, string $key): bool
+    public function topConfigGetBool(string $pluginName, string $dotKey): bool
     {
-        return $this->topConfigRegistry->getBool($pluginName, $key);
+        return $this->topConfigRegistry->getTopConfig($pluginName)->getBool($dotKey);
+    }
+
+
+    /**
+     * Get a integer configuration value
+     *
+     * @throws TopConfigNotFoundException when key is not found
+     */
+    public function topConfigGetInt(string $pluginName, string $dotKey): int
+    {
+        return $this->topConfigRegistry->getTopConfig($pluginName)->getInt($dotKey);
     }
 
     /**
@@ -69,9 +81,9 @@ class TopConfigTwigExtension extends AbstractExtension
      *
      * @throws TopConfigNotFoundException when key is not found
      */
-    public function topConfigTree(?string $pluginName = null)
+    public function topConfigNested(string $pluginName): array
     {
-        return $this->topConfigRegistry->getNestedConfig($pluginName);
+        return $this->topConfigRegistry->getTopConfig($pluginName)->getNestedConfig();
     }
 
     /**
@@ -80,7 +92,7 @@ class TopConfigTwigExtension extends AbstractExtension
      */
     public function topConfigFlat(string $pluginName): array
     {
-        return $this->topConfigRegistry->getFlatConfig($pluginName);
+        return $this->topConfigRegistry->getTopConfig($pluginName)->getFlatConfig();
     }
 
 
@@ -91,9 +103,8 @@ class TopConfigTwigExtension extends AbstractExtension
      */
     public function topConfigToml(string $pluginName): string|null
     {
-        $flatConfig = $this->topConfigRegistry->getFlatConfig($pluginName);
+        $flatConfig = $this->topConfigRegistry->getTopConfig($pluginName)->getFlatConfig();
 
-        // return UtilToml::flatConfigToTomlV1($flatConfig);
         return UtilToml::flatConfigToToml($flatConfig);
     }
 
