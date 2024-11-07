@@ -58,7 +58,6 @@ class TopConfigRegistry
             $pluginSystemConfig,
             $completeMapping
         );
-        UtilDebug::d($this->registeredConfigs[$pluginName]);
     }
 
     public function getConfig(string $pluginName): ?TopConfig
