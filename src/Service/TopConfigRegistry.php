@@ -4,8 +4,11 @@ namespace Topdata\TopdataFoundationSW6\Service;
 
 use RuntimeException;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
+use Topdata\TopdataFoundationSW6\DTO\TopConfig;
 use Topdata\TopdataFoundationSW6\Exception\PluginNotRegisteredException;
 use Topdata\TopdataFoundationSW6\Exception\TopConfigNotFoundException;
+use Topdata\TopdataFoundationSW6\Trait\CliStyleTrait;
+use TopdataSoftwareGmbH\Util\UtilDebug;
 
 /**
  * This service handles the registration and retrieval of plugin configurations.
@@ -13,8 +16,10 @@ use Topdata\TopdataFoundationSW6\Exception\TopConfigNotFoundException;
  *
  * 11/2024 created
  */
-class TopConfigService
+class TopConfigRegistry
 {
+    use CliStyleTrait;
+
     /**
      * @var array The registered plugin configurations, format: [pluginName => ['pluginSystemConfig' => [], 'mapping' => []]]
      */
@@ -26,42 +31,51 @@ class TopConfigService
         private readonly SystemConfigService $systemConfigService
     )
     {
+        $this->beVerboseOnCli();
     }
+
+
+    /** @var array<string, TopConfig> */
+    private array $registeredConfigs = [];
 
     /**
-     * Register a plugin's configuration mapping
-     * This is called in a compiler pass in the plugin's build method
+     * This is called in a container compiler pass.
+     * It registers the plugin in the TopConfigRegistry.
      *
-     * @param string $shopwarePluginClass The FQCN of the plugin
-     * @param array $mapping The configuration mapping for the plugin
-     * @return void
+     * 11/2024 created
      */
-    public function registerPluginConfig(string $shopwarePluginClass, array $mapping): void
+    public function registerPlugin(string $pluginClass, array $configMapping): void
     {
-        $pluginName = substr($shopwarePluginClass, strrpos($shopwarePluginClass, '\\') + 1);
-
+        $pluginName = $this->extractPluginName($pluginClass);
         $pluginSystemConfig = $this->systemConfigService->get($pluginName . '.config');
-
-        // ---- add missing keys to $mapping
-        $mappingComplete = $mapping;
-        foreach ($pluginSystemConfig as $key => $value) {
-            if (!array_key_exists($key, $mappingComplete)) {
-                $mappingComplete[$key] = $key;
-            }
+        if($pluginSystemConfig === null) {
+            $this->cliStyle->warning("plugin $pluginName has no config");
+            $pluginSystemConfig = [];
         }
-        // ---- remove invalid keys from $mapping
-        foreach ($mappingComplete as $key => $value) {
-            if (!array_key_exists($key, $pluginSystemConfig)) {
-                unset($mappingComplete[$key]);
-            }
-        }
-
-        $this->registeredPluginConfigs[$pluginName] = [
-            'pluginSystemConfig' => $pluginSystemConfig,
-            'mapping'            => $mappingComplete,
-            // 'mapping'            => $mapping,
-        ];
+        $completeMapping = $this->_getCompleteMapping($pluginSystemConfig, $configMapping);
+        $this->registeredConfigs[$pluginName] = new TopConfig(
+            $pluginName,
+            $pluginSystemConfig,
+            $completeMapping
+        );
+        UtilDebug::d($this->registeredConfigs[$pluginName]);
     }
+
+    public function getConfig(string $pluginName): ?TopConfig
+    {
+        return $this->registeredConfigs[$pluginName] ?? null;
+    }
+
+    private static function extractPluginName(string $pluginClass): string
+    {
+        $lastNamespaceSeparator = strrpos($pluginClass, '\\');
+        if ($lastNamespaceSeparator === false) {
+            throw new \InvalidArgumentException('Invalid plugin class name provided');
+        }
+
+        return substr($pluginClass, $lastNamespaceSeparator + 1);
+    }
+
 
     /**
      * Get a boolean value using dot notation
@@ -175,6 +189,7 @@ class TopConfigService
     }
 
     /**
+     * FIXME: this is a duplicate code!
      * Build a tree structure from flat dot notation
      */
     private function buildConfigTree(array $flat): array
@@ -236,5 +251,25 @@ class TopConfigService
             ];
         }
         return $info;
+    }
+
+    public function _getCompleteMapping(array $pluginSystemConfig, array $mapping): array
+    {
+        // ---- add missing keys to $mapping
+        $mappingComplete = $mapping;
+        foreach ($pluginSystemConfig as $key => $value) {
+            if (!array_key_exists($key, $mappingComplete)) {
+                $mappingComplete[$key] = $key;
+            }
+        }
+
+        // ---- remove invalid keys from $mapping
+        foreach ($mappingComplete as $key => $value) {
+            if (!array_key_exists($key, $pluginSystemConfig)) {
+                unset($mappingComplete[$key]);
+            }
+        }
+
+        return $mappingComplete;
     }
 }

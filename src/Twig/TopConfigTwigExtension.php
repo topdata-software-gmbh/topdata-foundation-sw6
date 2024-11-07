@@ -7,7 +7,7 @@ use Topdata\TopdataFoundationSW6\Util\Configuration\UtilToml;
 use TopdataSoftwareGmbH\Util\UtilDebug;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFunction;
-use Topdata\TopdataFoundationSW6\Service\TopConfigService;
+use Topdata\TopdataFoundationSW6\Service\TopConfigRegistry;
 
 /**
  * Provides Twig functions for accessing plugin configurations
@@ -15,7 +15,7 @@ use Topdata\TopdataFoundationSW6\Service\TopConfigService;
 class TopConfigTwigExtension extends AbstractExtension
 {
     public function __construct(
-        private readonly TopConfigService $topConfigService,
+        private readonly TopConfigRegistry $topConfigRegistry,
     )
     {
     }
@@ -40,7 +40,7 @@ class TopConfigTwigExtension extends AbstractExtension
      */
     public function topConfig(string $pluginName, string $key)
     {
-        return $this->topConfigService->get($pluginName, $key);
+        return $this->topConfigRegistry->get($pluginName, $key);
     }
 
     /**
@@ -50,7 +50,7 @@ class TopConfigTwigExtension extends AbstractExtension
      */
     public function topConfigString(string $pluginName, string $key): string
     {
-        return $this->topConfigService->getString($pluginName, $key);
+        return $this->topConfigRegistry->getString($pluginName, $key);
     }
 
 
@@ -61,7 +61,7 @@ class TopConfigTwigExtension extends AbstractExtension
      */
     public function topConfigBool(string $pluginName, string $key): bool
     {
-        return $this->topConfigService->getBool($pluginName, $key);
+        return $this->topConfigRegistry->getBool($pluginName, $key);
     }
 
     /**
@@ -71,7 +71,7 @@ class TopConfigTwigExtension extends AbstractExtension
      */
     public function topConfigTree(?string $pluginName = null)
     {
-        return $this->topConfigService->getNestedConfig($pluginName);
+        return $this->topConfigRegistry->getNestedConfig($pluginName);
     }
 
     /**
@@ -80,7 +80,7 @@ class TopConfigTwigExtension extends AbstractExtension
      */
     public function topConfigFlat(string $pluginName): array
     {
-        return $this->topConfigService->getFlatConfig($pluginName);
+        return $this->topConfigRegistry->getFlatConfig($pluginName);
     }
 
 
@@ -91,7 +91,7 @@ class TopConfigTwigExtension extends AbstractExtension
      */
     public function topConfigToml(string $pluginName): string|null
     {
-        $flatConfig = $this->topConfigService->getFlatConfig($pluginName);
+        $flatConfig = $this->topConfigRegistry->getFlatConfig($pluginName);
 
         // return UtilToml::flatConfigToTomlV1($flatConfig);
         return UtilToml::flatConfigToToml($flatConfig);
