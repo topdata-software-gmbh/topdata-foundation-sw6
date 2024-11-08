@@ -87,8 +87,7 @@ class TopConfigTwigExtension extends AbstractExtension
     }
 
     /**
-     * TODO: make pluginName optional to get list of all plugins configs, each row
-     *      prefixed with corresponding pluginName
+     *
      */
     public function topConfigFlat(string $pluginName): array
     {
