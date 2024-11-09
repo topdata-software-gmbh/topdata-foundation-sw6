@@ -6,9 +6,8 @@ use RuntimeException;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Topdata\TopdataFoundationSW6\DTO\TopConfig;
 use Topdata\TopdataFoundationSW6\Exception\PluginNotRegisteredException;
-use Topdata\TopdataFoundationSW6\Exception\TopConfigNotFoundException;
 use Topdata\TopdataFoundationSW6\Trait\CliStyleTrait;
-use TopdataSoftwareGmbH\Util\UtilDebug;
+use Topdata\TopdataFoundationSW6\Util\UtilPlugin;
 
 /**
  * This service handles the registration and retrieval of plugin configurations.
@@ -43,7 +42,7 @@ class TopConfigRegistry
      */
     public function registerPlugin(string $pluginClass, array $configMapping): void
     {
-        $pluginName = $this->extractPluginName($pluginClass);
+        $pluginName = UtilPlugin::extractPluginName($pluginClass);
         $pluginSystemConfig = $this->systemConfigService->get($pluginName . '.config');
         if ($pluginSystemConfig === null) {
             $this->cliStyle->warning("plugin $pluginName has no config");
@@ -57,16 +56,6 @@ class TopConfigRegistry
         );
     }
 
-
-    private static function extractPluginName(string $pluginClass): string
-    {
-        $lastNamespaceSeparator = strrpos($pluginClass, '\\');
-        if ($lastNamespaceSeparator === false) {
-            throw new \InvalidArgumentException('Invalid plugin class name provided');
-        }
-
-        return substr($pluginClass, $lastNamespaceSeparator + 1);
-    }
 
 
 

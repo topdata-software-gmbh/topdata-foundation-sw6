@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace Topdata\TopdataFoundationSW6\Service;
 
+use Shopware\Core\Framework\Context;
+use Shopware\Core\Framework\Plugin\PluginService;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Topdata\TopdataFoundationSW6\Util\UtilPlugin;
 use TopdataSoftwareGmbH\Util\UtilDebug;
 
 /**
@@ -17,10 +20,27 @@ use TopdataSoftwareGmbH\Util\UtilDebug;
 class PluginHelperService
 {
     public function __construct(
-        private readonly ParameterBagInterface $parameterBag
+        private readonly ParameterBagInterface $parameterBag,
+        private readonly PluginService         $pluginService,
     )
     {
     }
+
+    /**
+     * 11/2024 created
+     */
+    public function getPluginVersion(string $pluginNameOrClass): string
+    {
+        if(UtilPlugin::isClassName($pluginNameOrClass)) {
+            $pluginNameOrClass = UtilPlugin::extractPluginName($pluginNameOrClass);
+        }
+
+        $pluginEntity = $this->pluginService->getPluginByName($pluginNameOrClass, Context::createDefaultContext());
+
+        return $pluginEntity?->getVersion() ?? 'unknown';
+    }
+
+
 
     /**
      * Check if a plugin is currently active
@@ -31,9 +51,11 @@ class PluginHelperService
     public function isPluginActive(string $pluginNameOrClass): bool
     {
         $activePlugins = $this->parameterBag->get('kernel.active_plugins');
-        $bIsPluginName = strpos($pluginNameOrClass, '\\') === false;
 
-        if ($bIsPluginName) {
+        if (UtilPlugin::isClassName($pluginNameOrClass)) {
+            // ---- it is a plugin class
+            return isset($activePlugins[$pluginNameOrClass]);
+        } else {
             // ---- it is a plugin name (without namespace)
             foreach ($activePlugins as $cls => $struct) {
                 if ($struct['name'] === $pluginNameOrClass) {
@@ -42,9 +64,6 @@ class PluginHelperService
             }
 
             return false;
-        } else {
-            // ---- it is a plugin class
-            return isset($activePlugins[$pluginNameOrClass]);
         }
     }
 
@@ -73,5 +92,6 @@ class PluginHelperService
     {
         return $this->isPluginActive('Topdata\TopdataConnectorSW6\TopdataConnectorSW6');
     }
+
 }
 

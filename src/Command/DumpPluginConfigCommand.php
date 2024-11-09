@@ -17,7 +17,7 @@ use Topdata\TopdataFoundationSW6\Service\TopConfigRegistry;
  */
 #[AsCommand(
     name: 'topdata:foundation:dump-plugin-config',
-    description: 'Dump plugin configuration',
+    description: 'Dump plugin configuration to stdout',
 )]
 class DumpPluginConfigCommand extends AbstractTopdataCommand
 {
@@ -46,8 +46,9 @@ class DumpPluginConfigCommand extends AbstractTopdataCommand
             $table = [];
             foreach ($this->topConfigRegistry->getRegisteredPluginNames() as $pluginName) {
                 $table[] = [
-                    'name' => $pluginName,
-                    'active'   => $this->pluginHelperService->isPluginActive($pluginName),
+                    'name'    => $pluginName,
+                    'version' => $this->pluginHelperService->getPluginVersion($pluginName),
+                    // 'active'   => $this->pluginHelperService->isPluginActive($pluginName),
                 ];
             }
             $this->cliStyle->listOfDictsAsTable($table, 'Registered Plugins');
@@ -58,8 +59,8 @@ class DumpPluginConfigCommand extends AbstractTopdataCommand
         // ---- dump config of given plugin
         $this->cliStyle->section('Dump plugin configuration');
         $topConfig = $this->topConfigRegistry->getTopConfig($pluginName);
-        $this->cliStyle->dumpDict($topConfig->getFlatConfig(), 'Flat Config');
-        $this->cliStyle->dumpDict($topConfig->getNestedConfig(), 'Nested Config');
+//        $this->cliStyle->dumpDict($topConfig->getFlatConfig(), 'Flat Config');
+//        $this->cliStyle->dumpDict($topConfig->getNestedConfig(), 'Nested Config');
         $this->cliStyle->writeln($topConfig->getToml());
 
         return Command::SUCCESS;
