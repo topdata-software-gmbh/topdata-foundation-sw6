@@ -5,6 +5,7 @@ namespace Topdata\TopdataFoundationSW6\DTO;
 
 use RuntimeException;
 use Topdata\TopdataFoundationSW6\Exception\TopConfigNotFoundException;
+use Topdata\TopdataFoundationSW6\Util\Configuration\UtilToml;
 
 /**
  * A storage class for configuration of a (topdata)plugin
@@ -167,6 +168,11 @@ final class TopConfig
     public function getInt(string $dotKey)
     {
         return $this->get($dotKey, 'int');
+    }
+
+    public function getToml(): string
+    {
+        return UtilToml::flatConfigToToml($this->getFlatConfig());
     }
 
 
