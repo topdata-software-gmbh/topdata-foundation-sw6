@@ -1,0 +1,1 @@
+/home/marc/devel/ai-coding-prompts/conventions/CONVENTIONS-PHP.md

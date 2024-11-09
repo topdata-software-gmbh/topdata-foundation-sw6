@@ -4,6 +4,7 @@ namespace Topdata\TopdataFoundationSW6\DTO;
 
 
 use RuntimeException;
+use Symfony\Component\Yaml\Yaml;
 use Topdata\TopdataFoundationSW6\Exception\TopConfigNotFoundException;
 use Topdata\TopdataFoundationSW6\Util\Configuration\UtilToml;
 
@@ -173,6 +174,11 @@ final class TopConfig
     public function getToml(): string
     {
         return UtilToml::flatConfigToToml($this->getFlatConfig());
+    }
+
+    public function getYaml(): string
+    {
+        return Yaml::dump($this->getNestedConfig());
     }
 
 
