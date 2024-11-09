@@ -9,9 +9,11 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Yaml\Yaml;
 use Topdata\TopdataFoundationSW6\Service\PluginHelperService;
 use Topdata\TopdataFoundationSW6\Service\TopConfigRegistry;
 use Topdata\TopdataFoundationSW6\Util\Configuration\UtilAsciiTree;
+use Topdata\TopdataFoundationSW6\Util\Configuration\UtilToml;
 
 /**
  * 11/2024 created
@@ -57,7 +59,7 @@ class DumpPluginConfigCommand extends AbstractTopdataCommand
                 'format',
                 'f',
                 InputArgument::OPTIONAL,
-                'Output format (toml, yaml, tree, json, flat)',
+                'Output format (toml, yaml, tree, json, flat, sys)',
                 'toml'
             );
     }
@@ -78,14 +80,15 @@ class DumpPluginConfigCommand extends AbstractTopdataCommand
         // ---- dump config of given plugin
         $this->cliStyle->section("$pluginName plugin configuration");
         $topConfig = $this->topConfigRegistry->getTopConfig($pluginName);
-        
-        match($input->getOption('format')) {
-            'toml' => $this->cliStyle->writeln($topConfig->getToml()),
-            'yaml' => $this->cliStyle->writeln($topConfig->getYaml()),
-            'json' => $this->cliStyle->writeln(json_encode($topConfig->getSystemConfig(), JSON_PRETTY_PRINT)),
-            'tree' => $this->cliStyle->writeln(UtilAsciiTree::tree($topConfig->getNestedConfig())),
-            'flat' => $this->cliStyle->dumpDict($topConfig->getFlatConfig()),
-            default => throw new \InvalidArgumentException("Invalid format: {$input->getOption('format')}, available formats: toml, yaml, json, tree, flat")
+
+        match ($input->getOption('format')) {
+            'toml'  => $this->cliStyle->writeln(UtilToml::flatConfigToToml($topConfig->getFlatConfig())),
+            'yaml'  => $this->cliStyle->writeln(Yaml::dump($topConfig->getNestedConfig())),
+            'json'  => $this->cliStyle->writeln(json_encode($topConfig->getNestedConfig(), JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES)),
+            'tree'  => $this->cliStyle->writeln(UtilAsciiTree::tree($topConfig->getNestedConfig())),
+            'flat'  => $this->cliStyle->dumpDict($topConfig->getFlatConfig()),
+            'sys'   => $this->cliStyle->dumpDict($topConfig->getSystemConfig()),
+            default => throw new \InvalidArgumentException("Invalid format: {$input->getOption('format')}, available formats: toml, yaml, json, tree, flat, sys")
         };
 
         return Command::SUCCESS;

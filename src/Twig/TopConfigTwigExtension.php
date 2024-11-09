@@ -2,7 +2,9 @@
 
 namespace Topdata\TopdataFoundationSW6\Twig;
 
+use Symfony\Component\Yaml\Yaml;
 use Topdata\TopdataFoundationSW6\Exception\TopConfigNotFoundException;
+use Topdata\TopdataFoundationSW6\Util\Configuration\UtilAsciiTree;
 use Topdata\TopdataFoundationSW6\Util\Configuration\UtilToml;
 use TopdataSoftwareGmbH\Util\UtilDebug;
 use Twig\Extension\AbstractExtension;
@@ -30,6 +32,9 @@ class TopConfigTwigExtension extends AbstractExtension
             new TwigFunction('topConfigNested', [$this, 'topConfigNested']),
             new TwigFunction('topConfigFlat', [$this, 'topConfigFlat']),
             new TwigFunction('topConfigToml', [$this, 'topConfigToml']),
+            new TwigFunction('topConfigYaml', [$this, 'topConfigYaml']),
+            new TwigFunction('topConfigJson', [$this, 'topConfigJson']),
+            new TwigFunction('topConfigTree', [$this, 'topConfigTree']),
         ];
     }
 
@@ -102,7 +107,39 @@ class TopConfigTwigExtension extends AbstractExtension
      */
     public function topConfigToml(string $pluginName): string|null
     {
-        return $this->topConfigRegistry->getTopConfig($pluginName)->getToml();
+        return UtilToml::flatConfigToToml($this->topConfigRegistry->getTopConfig($pluginName)->getFlatConfig());
+    }
+
+
+    /**
+     * Returns the config as ascii tree
+     *
+     * 11/2024 created
+     */
+    public function topConfigTree(string $pluginName): string|null
+    {
+        return UtilAsciiTree::tree($this->topConfigRegistry->getTopConfig($pluginName)->getNestedConfig());
+    }
+
+
+    /**
+     * Returns the config as ascii tree
+     *
+     * 11/2024 created
+     */
+    public function topConfigYaml(string $pluginName): string|null
+    {
+        return Yaml::dump($this->topConfigRegistry->getTopConfig($pluginName)->getNestedConfig());
+    }
+
+    /**
+     * Returns the config as ascii tree
+     *
+     * 11/2024 created
+     */
+    public function topConfigJson(string $pluginName): string|null
+    {
+        return json_encode($this->topConfigRegistry->getTopConfig($pluginName)->getNestedConfig(), JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES);
     }
 
 }

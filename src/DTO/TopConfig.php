@@ -171,15 +171,4 @@ final class TopConfig
         return $this->get($dotKey, 'int');
     }
 
-    public function getToml(): string
-    {
-        return UtilToml::flatConfigToToml($this->getFlatConfig());
-    }
-
-    public function getYaml(): string
-    {
-        return Yaml::dump($this->getNestedConfig());
-    }
-
-
 }
