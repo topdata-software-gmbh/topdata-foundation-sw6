@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace Topdata\TopdataFoundationSW6\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use TopdataSoftwareGmbH\Util\UtilDebug;
 
 /**
  * Service for handling plugin-related operations
- * 
+ *
  * @since 04/2024 PluginHelper --> PluginHelperService
  * @since 11/2024 moved from TopdataConnectorSW6 to TopdataFoundationSW6
  * @since 11/2024 refactored to use ParameterBag
@@ -17,20 +18,34 @@ class PluginHelperService
 {
     public function __construct(
         private readonly ParameterBagInterface $parameterBag
-    ) {
+    )
+    {
     }
 
     /**
      * Check if a plugin is currently active
      *
-     * @param string $pluginClass The fully qualified class name of the plugin
+     * @param string $pluginNameOrClass The fully qualified class name of the plugin or the plugin name
      * @return bool True if the plugin is active, false otherwise
      */
-    public function isPluginActive(string $pluginClass): bool
+    public function isPluginActive(string $pluginNameOrClass): bool
     {
         $activePlugins = $this->parameterBag->get('kernel.active_plugins');
+        $bIsPluginName = strpos($pluginNameOrClass, '\\') === false;
 
-        return isset($activePlugins[$pluginClass]);
+        if ($bIsPluginName) {
+            // ---- it is a plugin name (without namespace)
+            foreach ($activePlugins as $cls => $struct) {
+                if ($struct['name'] === $pluginNameOrClass) {
+                    return true;
+                }
+            }
+
+            return false;
+        } else {
+            // ---- it is a plugin class
+            return isset($activePlugins[$pluginNameOrClass]);
+        }
     }
 
     /**

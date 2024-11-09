@@ -149,7 +149,7 @@ final class TopConfig
         $flat = $this->getFlatConfig();
 
         if (!array_key_exists($dotKey, $flat)) {
-            throw new TopConfigNotFoundException(sprintf('TopConfig key "%s" not found for plugin "%s"', $dotKey, $pluginName));
+            throw new TopConfigNotFoundException(sprintf('TopConfig key "%s" not found for plugin "%s"', $dotKey, $this->pluginName));
         }
 
         return $this->_castValue($flat[$dotKey], $type);

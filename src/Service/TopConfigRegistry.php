@@ -120,10 +120,21 @@ class TopConfigRegistry
 
     /**
      * 11/2024 created
+     *
      * @return TopConfig[]
      */
     public function getRegisteredTopConfigs(): array
     {
         return $this->registeredTopConfigs;
+    }
+
+    /**
+     * 11/2024 created
+     *
+     * @return string[]
+     */
+    public function getRegisteredPluginNames(): array
+    {
+        return array_keys($this->registeredTopConfigs);
     }
 }

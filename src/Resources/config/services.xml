@@ -18,6 +18,10 @@
             <tag name="twig.extension"/>
         </service>
 
+        <!-- CONSOLE COMMANDS -->
+        <service id="Topdata\TopdataFoundationSW6\Command\DumpPluginConfigCommand" autowire="true">
+            <tag name="console.command"/>
+        </service>
 
     </services>
 </container>
