@@ -526,4 +526,36 @@ class CliStyle extends SymfonyStyle
 
         $this->dumpDict($countersDict, $title);
     }
+
+    /**
+     * Creates a bordered panel around content with an optional title, similar to Python's rich library panels
+     * 
+     * 11/2024 created
+     */
+    public function panel(string $content, string $title): void
+    {
+        // Split content into lines
+        $lines = explode("\n", $content);
+        
+        // Find the maximum line length including the content and title
+        $maxLength = max(
+            array_reduce($lines, fn($carry, $item) => max($carry, mb_strlen($item)), 0),
+            mb_strlen($title)
+        );
+        
+        // Add padding
+        $maxLength += 2;
+        
+        // Top border with title
+        $this->writeln('╭─' . $title . str_repeat('─', $maxLength - mb_strlen($title)) . '─╮');
+        
+        // Content lines
+        foreach ($lines as $line) {
+            $padding = str_repeat(' ', $maxLength - mb_strlen($line));
+            $this->writeln('│ ' . $line . $padding . ' │');
+        }
+        
+        // Bottom border
+        $this->writeln('╰' . str_repeat('─', $maxLength + 2) . '╯');
+    }
 }

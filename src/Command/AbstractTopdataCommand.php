@@ -6,6 +6,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\NullOutput;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\ErrorHandler\ErrorHandler;
 use Topdata\TopdataFoundationSW6\Helper\CliStyle;
 use Topdata\TopdataFoundationSW6\Util\UtilDict;
 use Topdata\TopdataFoundationSW6\Util\UtilFormatter;
@@ -81,7 +82,21 @@ abstract class AbstractTopdataCommand extends Command
         if (!empty($options)) {
             $this->cliStyle->dumpDict($options, 'Command Options');
         }
+
+        // ---- disable deprecation logs
+        ErrorHandler::register(null, false)->setLoggers([
+            \E_DEPRECATED      => [null],
+            \E_USER_DEPRECATED => [null],
+        ]);
+
+        // ---- reduce doctrine memory leakage (not really)
+        // this is what --no-debug option is doing (not really)
+//        if (isset($this->em)) {
+//            Log::notice("disabling doctrine SQL logging ...");
+//            $this->em->getConnection()->getConfiguration()->setSQLLogger(null);
+//        }
     }
+
 
     /**
      * 01/2023 created.
