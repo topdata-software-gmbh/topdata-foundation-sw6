@@ -15,8 +15,9 @@ use Topdata\TopdataFoundationSW6\Util\Configuration\UtilToml;
  */
 final class TopConfig
 {
-    private array $_flatConfig;
-    private array $_nestedConfig;
+    private ?array $_flatConfig = null;
+    private ?array $_nestedConfig = null;
+    private array $_dirtyMap = [];
 
     public function __construct(
         private string $pluginName,
@@ -75,7 +76,7 @@ final class TopConfig
 
     public function getFlatConfig(): array
     {
-        if (!isset($this->_flatConfig)) {
+        if (is_null($this->_flatConfig)) {
             $this->_flatConfig = $this->_sysToFlat(
                 $this->getSystemConfig(),
                 $this->getMapping()
@@ -119,7 +120,7 @@ final class TopConfig
      */
     public function getNestedConfig(): array
     {
-        if (!isset($this->_nestedConfig)) {
+        if (is_null($this->_nestedConfig)) {
             $this->_nestedConfig = self::_flatToNested($this->getFlatConfig());
         }
 
@@ -145,7 +146,7 @@ final class TopConfig
         };
     }
 
-    public function get(string $dotKey, ?string $type = null)
+    public function get(string $dotKey, ?string $type = null): mixed
     {
         $flat = $this->getFlatConfig();
 
@@ -169,6 +170,40 @@ final class TopConfig
     public function getInt(string $dotKey)
     {
         return $this->get($dotKey, 'int');
+    }
+
+    public function set(string $dotKey, mixed $value): void
+    {
+        // Find original key in mapping and update systemConfig
+        $originalKey = array_search($dotKey, $this->mapping);
+        if($originalKey === false) {
+            throw new TopConfigNotFoundException("Original key not found for dotKey $dotKey");
+        }
+        
+        // Only mark as dirty if value actually changed
+        if (!isset($this->systemConfig[$originalKey]) || $this->systemConfig[$originalKey] !== $value) {
+            $this->_dirtyMap[$originalKey] = $value;
+        }
+        
+        $this->systemConfig[$originalKey] = $value;
+        $this->_flatConfig = null;
+        $this->_nestedConfig = null;
+    }
+
+    /**
+     * Returns the map of changed configuration values that need to be persisted
+     */
+    public function getDirtyValues(): array 
+    {
+        return $this->_dirtyMap;
+    }
+
+    /**
+     * Clears the dirty state after successful persistence
+     */
+    public function clearDirtyState(): void
+    {
+        $this->_dirtyMap = [];
     }
 
 }

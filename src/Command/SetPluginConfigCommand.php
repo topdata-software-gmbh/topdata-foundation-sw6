@@ -10,26 +10,22 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ChoiceQuestion;
-use Symfony\Component\Yaml\Yaml;
 use Topdata\TopdataFoundationSW6\Service\CliDumpService;
-use Topdata\TopdataFoundationSW6\Service\PluginHelperService;
 use Topdata\TopdataFoundationSW6\Service\TopConfigRegistry;
-use Topdata\TopdataFoundationSW6\Util\Configuration\UtilAsciiTree;
-use Topdata\TopdataFoundationSW6\Util\Configuration\UtilToml;
 
 /**
  * 11/2024 created
  */
 #[AsCommand(
-    name: 'topdata:foundation:dump-plugin-config',
-    description: 'Dump plugin configuration to stdout',
+    name: 'topdata:foundation:set-plugin-config',
+    description: 'Set plugin configuration to stdout',
 )]
-class DumpPluginConfigCommand extends AbstractTopdataCommand
+class SetPluginConfigCommand extends AbstractTopdataCommand
 {
-
     public function __construct(
-        private readonly TopConfigRegistry $topConfigRegistry,
-        private readonly CliDumpService    $cliDumpService,
+        private readonly TopConfigRegistry   $topConfigRegistry,
+        private readonly CliDumpService      $cliDumpService,
+
     )
     {
         parent::__construct();
@@ -39,7 +35,6 @@ class DumpPluginConfigCommand extends AbstractTopdataCommand
     protected function configure(): void
     {
         $this->addArgument('pluginName', InputArgument::OPTIONAL, 'name of the plugin');
-        $this->addOption('format', 'f', InputArgument::OPTIONAL, 'Output format (toml, yaml, tree, json, flat, sys)', 'toml');
     }
 
     /**
@@ -63,19 +58,27 @@ class DumpPluginConfigCommand extends AbstractTopdataCommand
             $pluginName = $helper->ask($input, $output, $question);
         }
 
-        // ---- dump config of given plugin
+        // ---- set config of given plugin
         $this->cliStyle->section("$pluginName plugin configuration");
         $topConfig = $this->topConfigRegistry->getTopConfig($pluginName);
 
-        match ($input->getOption('format')) {
-            'toml'  => $this->cliStyle->writeln(UtilToml::flatConfigToToml($topConfig->getFlatConfig())),
-            'yaml'  => $this->cliStyle->writeln(Yaml::dump($topConfig->getNestedConfig())),
-            'json'  => $this->cliStyle->writeln(json_encode($topConfig->getNestedConfig(), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)),
-            'tree'  => $this->cliStyle->writeln(UtilAsciiTree::tree($topConfig->getNestedConfig())),
-            'flat'  => $this->cliStyle->dumpDict($topConfig->getFlatConfig()),
-            'sys'   => $this->cliStyle->dumpDict($topConfig->getSystemConfig()),
-            default => throw new \InvalidArgumentException("Invalid format: {$input->getOption('format')}, available formats: toml, yaml, json, tree, flat, sys")
-        };
+        // ---- get all config keys and let user choose
+        $choices = $topConfig->getFlatConfig();
+        $helper = $this->getHelper('question');
+        $question = new ChoiceQuestion(
+            'Please select a config key:',
+            array_keys($choices),
+        );
+        $question->setErrorMessage('Config key %s is invalid.');
+        $dotKey = $helper->ask($input, $output, $question);
+
+        // ---- print old value and let user choose new value
+        $this->cliStyle->writeln(sprintf('Old value %s = %s', $dotKey, $choices[$dotKey]));
+        $value = $this->cliStyle->ask('Please enter new value:');
+        $topConfig->set($dotKey, $value);
+
+        $numChanges =$this->topConfigRegistry->persistChanges();
+        $this->cliStyle->writeln(sprintf('%d configuration values were changed', $numChanges));
 
         return Command::SUCCESS;
     }

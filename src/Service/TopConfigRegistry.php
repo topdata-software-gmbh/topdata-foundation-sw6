@@ -126,4 +126,29 @@ class TopConfigRegistry
     {
         return array_keys($this->registeredTopConfigs);
     }
+
+    /**
+     * Persists any changed configuration values to the database
+     * 
+     * @return int Number of configuration values that were persisted
+     */
+    public function persistChanges(): int
+    {
+        $changedCount = 0;
+        foreach ($this->registeredTopConfigs as $pluginName => $topConfig) {
+            $dirtyValues = $topConfig->getDirtyValues();
+            if (!empty($dirtyValues)) {
+                foreach ($dirtyValues as $key => $value) {
+                    $this->systemConfigService->set(
+                        $pluginName . '.config.' . $key,
+                        $value
+                    );
+                    $changedCount++;
+                }
+                $topConfig->clearDirtyState();
+            }
+        }
+        return $changedCount;
+    }
+
 }

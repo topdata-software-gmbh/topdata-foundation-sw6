@@ -83,7 +83,7 @@ abstract class AbstractTopdataCommand extends Command
         $this->cliStyle->title($now . ' - ' . $this->getName() . ' - ' . $this->getDescription());
 
         // ---- dump arguments and options
-        self::dumpArgsAndOptions($input);
+        self::_dumpArgsAndOptions($input);
 
         // ---- disable deprecation logs
         ErrorHandler::register(null, false)->setLoggers([
@@ -102,11 +102,16 @@ abstract class AbstractTopdataCommand extends Command
     /**
      * 11/2024 created
      */
-    private function dumpArgsAndOptions(InputInterface $input): void
+    private function _dumpArgsAndOptions(InputInterface $input): void
     {
         $arguments = $input->getArguments();
         unset($arguments['command']);
         $options = $this->_getFilteredCommandLineArgs($input);
+
+        if(empty($arguments) && empty($options)) {
+            $this->cliStyle->writeln('<gray>No arguments or options found.</gray>');
+            return;
+        }
 
         // ---- build table
         $tbl = $this->cliStyle->createTable();
