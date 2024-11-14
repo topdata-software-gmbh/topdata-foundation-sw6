@@ -15,9 +15,8 @@ use Symfony\Component\Console\Output\NullOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use Topdata\TopdataConnectorSW6\DTO\ImportCommandCliOptionsDTO;
-use Topdata\TopdataConnectorSW6\Util\UtilArray;
-use Topdata\TopdataConnectorSW6\Util\UtilString;
+use Topdata\TopdataFoundationSW6\Util\UtilArray;
+use Topdata\TopdataFoundationSW6\Util\UtilString;
 
 /**
  * 05/2022 created (copied from art-experiments).
@@ -114,6 +113,9 @@ class CliStyle extends SymfonyStyle
 
         // ---- custom styles, see https://symfony.com/doc/current/console/coloring.html#using-color-styles
         $this->output->getFormatter()->setStyle('fire', new OutputFormatterStyle('red', '#ff0', ['bold', 'blink']));
+        $this->output->getFormatter()->setStyle('green', new OutputFormatterStyle('green'));
+        $this->output->getFormatter()->setStyle('blue', new OutputFormatterStyle('blue'));
+        $this->output->getFormatter()->setStyle('gray', new OutputFormatterStyle('gray'));
 
         parent::__construct($input, $output);
     }
@@ -447,23 +449,6 @@ class CliStyle extends SymfonyStyle
         return $this->output;
     }
 
-    /**
-     * TODO: try using UtilSyntaxHighlightingCli::highlightSourceCode().
-     *
-     * 01/2024 created
-     * 02/2024 renamed writeSql --> dumpSql
-     *
-     * @param string|string[] $sql
-     */
-    public function dumpSql(string|array $sql): void
-    {
-        if (is_string($sql)) {
-            $sql = [$sql];
-        }
-        foreach ($sql as $s) {
-            $this->writeln(\SqlFormatter::format($s));
-        }
-    }
 
     /**
      * 03/2024 created.

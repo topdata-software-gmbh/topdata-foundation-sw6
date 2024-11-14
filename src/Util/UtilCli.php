@@ -37,6 +37,10 @@ class UtilCli
             return OutputInterface::VERBOSITY_VERBOSE;
         }
 
+        if ($input->hasParameterOption('-q', true)){
+            return OutputInterface::VERBOSITY_QUIET;
+        }
+
         return OutputInterface::VERBOSITY_NORMAL;
     }
 
