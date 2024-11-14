@@ -3,6 +3,8 @@
 namespace Topdata\TopdataFoundationSW6\Command;
 
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Helper\TableCellStyle;
+use Symfony\Component\Console\Helper\TableSeparator;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\NullOutput;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -10,6 +12,7 @@ use Symfony\Component\ErrorHandler\ErrorHandler;
 use Topdata\TopdataFoundationSW6\Helper\CliStyle;
 use Topdata\TopdataFoundationSW6\Util\UtilDict;
 use Topdata\TopdataFoundationSW6\Util\UtilFormatter;
+use TopdataSoftwareGmbH\Util\UtilDebug;
 
 /**
  * base command class with useful stuff for all commands.
@@ -21,15 +24,23 @@ abstract class AbstractTopdataCommand extends Command
     protected CliStyle $cliStyle;
     private float $_startTime; // in seconds, used for profiling
 
+    private static function _fixNonScalar(float|int|bool|array|string|null $val)
+    {
+        if(is_scalar($val)) {
+            return $val;
+        }
+
+        return json_encode($val, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+    }
+
     /**
      * 07/2023 created.
      *
-     * @param  InputInterface $input
-     * @return array
+     * @param InputInterface $input
+     * @return array dict
      */
-    protected static function getFilteredCommandLineArgs(InputInterface $input): array
+    protected static function _getFilteredCommandLineArgs(InputInterface $input): array
     {
-        // UtilDebug::d($input->getArguments());
         $ignoreList = [
             'help',
             'quiet',
@@ -54,7 +65,8 @@ abstract class AbstractTopdataCommand extends Command
         return $options;
     }
 
-    protected function initialize(InputInterface $input, OutputInterface $output)
+    #[\Override]
+    protected function initialize(InputInterface $input, OutputInterface $output): void
     {
         parent::initialize($input, $output);
 
@@ -70,18 +82,8 @@ abstract class AbstractTopdataCommand extends Command
         $now = (new \DateTime('now', new \DateTimeZone('Europe/Berlin')))->format('Y-m-d H:i');
         $this->cliStyle->title($now . ' - ' . $this->getName() . ' - ' . $this->getDescription());
 
-        // ---- dump arguments
-        $arguments = $input->getArguments();
-        unset($arguments['command']);
-        if (!empty($arguments)) {
-            $this->cliStyle->dumpDict($arguments, 'Command Arguments');
-        }
-
-        // ---- dump options
-        $options = $this->getFilteredCommandLineArgs($input);
-        if (!empty($options)) {
-            $this->cliStyle->dumpDict($options, 'Command Options');
-        }
+        // ---- dump arguments and options
+        self::dumpArgsAndOptions($input);
 
         // ---- disable deprecation logs
         ErrorHandler::register(null, false)->setLoggers([
@@ -97,6 +99,34 @@ abstract class AbstractTopdataCommand extends Command
 //        }
     }
 
+    /**
+     * 11/2024 created
+     */
+    private function dumpArgsAndOptions(InputInterface $input): void
+    {
+        $arguments = $input->getArguments();
+        unset($arguments['command']);
+        $options = $this->_getFilteredCommandLineArgs($input);
+
+        // ---- build table
+        $tbl = $this->cliStyle->createTable();
+        $tbl->setHorizontal(false);
+        $tbl->setHeaderTitle('Args and Opts');
+        $tbl->setHeaders(['Key', 'Value']);
+
+        $rows = [];
+        foreach ($arguments as $key => $val) {
+            $rows[] = [$key, self::_fixNonScalar($val)];
+        }
+        $rows[] = new TableSeparator(['colspan' => 2]);
+        foreach ($options as $key => $val) {
+            $rows[] = [$key, self::_fixNonScalar($val)];
+        }
+        $tbl->setRows($rows);
+
+        $tbl->render();
+        $this->cliStyle->newLine();
+    }
 
     /**
      * 01/2023 created.

@@ -38,22 +38,22 @@ class CliStyle extends SymfonyStyle
      *      echo $this->colorText("Success", "green+bold") . " Something was successful!");
      */
     private const ANSI_CODES = [
-        'off'       => 0,
-        'bold'      => 1,
-        'italic'    => 3,
-        'underline' => 4,
-        'blink'     => 5,
-        'inverse'   => 7,
-        'hidden'    => 8,
+        'off'        => 0,
+        'bold'       => 1,
+        'italic'     => 3,
+        'underline'  => 4,
+        'blink'      => 5,
+        'inverse'    => 7,
+        'hidden'     => 8,
         // ---------------
-        'black'   => 30,
-        'red'     => 31,
-        'green'   => 32,
-        'yellow'  => 33,
-        'blue'    => 34,
-        'magenta' => 35,
-        'cyan'    => 36,
-        'white'   => 37,
+        'black'      => 30,
+        'red'        => 31,
+        'green'      => 32,
+        'yellow'     => 33,
+        'blue'       => 34,
+        'magenta'    => 35,
+        'cyan'       => 36,
+        'white'      => 37,
         // ---------------
         'black_bg'   => 40,
         'red_bg'     => 41,
@@ -81,7 +81,7 @@ class CliStyle extends SymfonyStyle
         }
 
         $color_attrs = explode('+', $color);
-        $ansi_str    = '';
+        $ansi_str = '';
         foreach ($color_attrs as $attr) {
             $ansi_str .= "\033[" . self::ANSI_CODES[$attr] . 'm';
         }
@@ -108,7 +108,7 @@ class CliStyle extends SymfonyStyle
      */
     public function __construct(InputInterface $input, OutputInterface $output)
     {
-        $this->input  = $input;
+        $this->input = $input;
         $this->output = $output;
 
         // ---- custom styles, see https://symfony.com/doc/current/console/coloring.html#using-color-styles
@@ -123,7 +123,7 @@ class CliStyle extends SymfonyStyle
     /**
      * 04/2023 created.
      *
-     * @param  mixed        $val
+     * @param mixed $val
      * @return false|string
      */
     private static function _nonScalarToStringForTable(mixed $val)
@@ -134,7 +134,7 @@ class CliStyle extends SymfonyStyle
     /**
      * 08/2023 created.
      *
-     * @param  array $rows
+     * @param array $rows
      * @return array new rows with non-scalar values converted to string
      */
     public function _fixNonScalarTableCells(array $rows): array
@@ -182,12 +182,17 @@ class CliStyle extends SymfonyStyle
         $this->newLine();
     }
 
+
     /**
      * Formats a horizontal table.
      *
      * same like SymfonyStyle's table but with optional headerTitle and footerTitle
      *
      * 07/2023 created
+     * @param string[] $headers list of column names
+     * @param array $rows list of dicts
+     * @param string|null $headerTitle
+     * @param string|null $footerTitle
      */
     #[\Override]
     public function horizontalTable(array $headers, array $rows, ?string $headerTitle = null, ?string $footerTitle = null): void
@@ -226,7 +231,7 @@ class CliStyle extends SymfonyStyle
     {
         // optional conversion from object to assoc
         if (is_object($dict)) {
-            $dict = (array) $dict;
+            $dict = (array)$dict;
         }
 
         if (!$dict) {
@@ -363,23 +368,23 @@ class CliStyle extends SymfonyStyle
     public function myDefinitionList(array $list, ?string $headerTitle = null, ?string $footerTitle = null): void
     {
         $headers = [];
-        $row     = [];
+        $row = [];
         foreach ($list as $value) {
             if ($value instanceof TableSeparator) {
                 $headers[] = $value;
-                $row[]     = $value;
+                $row[] = $value;
                 continue;
             }
             if (\is_string($value)) {
                 $headers[] = new TableCell($value, ['colspan' => 2]);
-                $row[]     = null;
+                $row[] = null;
                 continue;
             }
             if (!\is_array($value)) {
                 throw new InvalidArgumentException('Value should be an array, string, or an instance of TableSeparator.');
             }
             $headers[] = key($value);
-            $row[]     = current($value);
+            $row[] = current($value);
         }
 
         $this->horizontalTable($headers, [$row], $headerTitle, $footerTitle);
@@ -395,7 +400,7 @@ class CliStyle extends SymfonyStyle
     {
         $rows = [];
         foreach ($arr as $key => $item) {
-            $rows[] = [(string) ($key + 1) => $item];
+            $rows[] = [(string)($key + 1) => $item];
         }
         $this->myDefinitionList($rows, $headerTitle, $footerTitle);
     }
@@ -462,10 +467,10 @@ class CliStyle extends SymfonyStyle
         if (empty($title)) {
             $this->writeln(str_repeat('-', $widthTotal));
         } else {
-            $lenTitle  = strlen($title);
+            $lenTitle = strlen($title);
             $remaining = $widthTotal - $lenTitle;
-            $left      = (int) ($remaining / 2);
-            $right     = $remaining - $left;
+            $left = (int)($remaining / 2);
+            $right = $remaining - $left;
             $this->writeln(str_repeat('-', $left) . ' ' . $title . ' ' . str_repeat('-', $right));
         }
 
@@ -504,7 +509,7 @@ class CliStyle extends SymfonyStyle
         }
 
         // right align all numbers
-        $maxLength = array_reduce(array_values($countersDict), fn ($carry, $item) => max($carry, strlen($item)), 0);
+        $maxLength = array_reduce(array_values($countersDict), fn($carry, $item) => max($carry, strlen($item)), 0);
         foreach ($countersDict as $key => $val) {
             $countersDict[$key] = str_pad($val, $maxLength, ' ', STR_PAD_LEFT);
         }
@@ -514,32 +519,32 @@ class CliStyle extends SymfonyStyle
 
     /**
      * Creates a bordered panel around content with an optional title, similar to Python's rich library panels
-     * 
+     *
      * 11/2024 created
      */
     public function panel(string $content, string $title): void
     {
         // Split content into lines
         $lines = explode("\n", $content);
-        
+
         // Find the maximum line length including the content and title
         $maxLength = max(
             array_reduce($lines, fn($carry, $item) => max($carry, mb_strlen($item)), 0),
             mb_strlen($title)
         );
-        
+
         // Add padding
         $maxLength += 2;
-        
+
         // Top border with title
         $this->writeln('╭─' . $title . str_repeat('─', $maxLength - mb_strlen($title)) . '─╮');
-        
+
         // Content lines
         foreach ($lines as $line) {
             $padding = str_repeat(' ', $maxLength - mb_strlen($line));
             $this->writeln('│ ' . $line . $padding . ' │');
         }
-        
+
         // Bottom border
         $this->writeln('╰' . str_repeat('─', $maxLength + 2) . '╯');
     }
