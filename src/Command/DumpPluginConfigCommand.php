@@ -9,6 +9,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Yaml\Yaml;
 use Topdata\TopdataFoundationSW6\Service\PluginHelperService;
 use Topdata\TopdataFoundationSW6\Service\TopConfigRegistry;
@@ -33,21 +34,22 @@ class DumpPluginConfigCommand extends AbstractTopdataCommand
     }
 
     /**
-     * list registered plugins in a table
+     * list registered plugins in a table and return the list of plugin names
      *
      * 11/2024 created
      */
-    private function _listRegisteredPluginsInATable(): void
+    private function _listRegisteredPluginsInATable(): array
     {
-        $this->cliStyle->note('Please pass plugin name as argument!');
         $table = [];
-        foreach ($this->topConfigRegistry->getRegisteredPluginNames() as $pluginName) {
+        $plugins = $this->topConfigRegistry->getRegisteredPluginNames();
+        foreach ($plugins as $pluginName) {
             $table[] = [
                 'name'    => $pluginName,
                 'version' => $this->pluginHelperService->getPluginVersion($pluginName),
             ];
         }
         $this->cliStyle->listOfDictsAsTable($table, 'Registered Plugins');
+        return $plugins;
     }
 
 
@@ -71,10 +73,17 @@ class DumpPluginConfigCommand extends AbstractTopdataCommand
     {
         $pluginName = $input->getArgument('pluginName');
         if (!$pluginName) {
-            // ---- list registered plugins in a table and exit
-            $this->_listRegisteredPluginsInATable();
-
-            return Command::SUCCESS;
+            // ---- list registered plugins and let user choose
+            $plugins = $this->_listRegisteredPluginsInATable();
+            
+            $helper = $this->getHelper('question');
+            $question = new ChoiceQuestion(
+                'Please select a plugin:',
+                $plugins
+            );
+            $question->setErrorMessage('Plugin %s is invalid.');
+            
+            $pluginName = $helper->ask($input, $output, $question);
         }
 
         // ---- dump config of given plugin
