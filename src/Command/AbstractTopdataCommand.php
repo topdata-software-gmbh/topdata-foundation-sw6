@@ -108,7 +108,7 @@ abstract class AbstractTopdataCommand extends Command
         unset($arguments['command']);
         $options = $this->_getFilteredCommandLineArgs($input);
 
-        if(empty($arguments) && empty($options)) {
+        if (empty($arguments) && empty($options)) {
             $this->cliStyle->writeln('<gray>No arguments or options found.</gray>');
             return;
         }
@@ -120,12 +120,20 @@ abstract class AbstractTopdataCommand extends Command
         $tbl->setHeaders(['Key', 'Value']);
 
         $rows = [];
-        foreach ($arguments as $key => $val) {
-            $rows[] = [$key, self::_fixNonScalar($val)];
+        if (empty($arguments)) {
+            $rows[] = ['<gray>No Arguments</gray>', ''];
+        } else {
+            foreach ($arguments as $key => $val) {
+                $rows[] = [$key, self::_fixNonScalar($val)];
+            }
         }
         $rows[] = new TableSeparator(['colspan' => 2]);
-        foreach ($options as $key => $val) {
-            $rows[] = [$key, self::_fixNonScalar($val)];
+        if (empty($options)) {
+            $rows[] = ['<gray>No Options</gray>', ''];
+        } else {
+            foreach ($options as $key => $val) {
+                $rows[] = [$key, self::_fixNonScalar($val)];
+            }
         }
         $tbl->setRows($rows);
 
