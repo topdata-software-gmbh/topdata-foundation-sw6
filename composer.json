@@ -1,6 +1,6 @@
 {
     "name": "topdata/topdata-foundation-sw6",
-    "description": "With this plugin you can import demo data",
+    "description": "Utility classes for Shopware 6",
     "version": "1.0.4",
     "type": "shopware-platform-plugin",
     "license": "MIT",
