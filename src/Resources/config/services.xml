@@ -11,6 +11,15 @@
         <service id="Topdata\TopdataFoundationSW6\Service\ManufacturerService" autowire="true"/>
         <service id="Topdata\TopdataFoundationSW6\Service\PluginHelperService" autowire="true"/>
         <service id="Topdata\TopdataFoundationSW6\Service\CliDumpService" autowire="true"/>
+        <service id="Topdata\TopdataFoundationSW6\Service\TopdataReportService" autowire="true"/>
+
+
+        <!-- Import Report Entity -->
+        <service id="Topdata\TopdataFoundationSW6\Core\Content\TopdataReport\TopdataReportDefinition">
+            <tag name="shopware.entity.definition" entity="topdata_report" />
+        </service>
+
+
 
 
 
