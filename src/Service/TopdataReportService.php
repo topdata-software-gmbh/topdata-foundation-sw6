@@ -22,6 +22,7 @@ class TopdataReportService
     }
 
     /**
+     * TODO: rename or move to TopdataConnectorSW6
      * Start a new import report
      */
     public function startImport(string $commandLine): string
@@ -34,6 +35,7 @@ class TopdataReportService
                 'status'      => TopdataReportStatusConstants::RUNNING,
                 'commandLine' => $commandLine,
                 'startedAt'   => new \DateTime(),
+                'reportData'  => [],
             ]
         ], Context::createDefaultContext());
 
