@@ -12,6 +12,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ChoiceQuestion;
 use Topdata\TopdataFoundationSW6\Service\CliDumpService;
 use Topdata\TopdataFoundationSW6\Service\TopConfigRegistry;
+use Topdata\TopdataFoundationSW6\Util\CliLogger;
 
 /**
  * 11/2024 created
@@ -59,7 +60,7 @@ class SetPluginConfigCommand extends AbstractTopdataCommand
         }
 
         // ---- set config of given plugin
-        \Topdata\TopdataFoundationSW6\Util\CliLogger::getCliStyle()->section("$pluginName plugin configuration");
+        CliLogger::section("$pluginName plugin configuration");
         $topConfig = $this->topConfigRegistry->getTopConfig($pluginName);
 
         // ---- get all config keys and let user choose
@@ -73,12 +74,12 @@ class SetPluginConfigCommand extends AbstractTopdataCommand
         $dotKey = $helper->ask($input, $output, $question);
 
         // ---- print old value and let user choose new value
-        \Topdata\TopdataFoundationSW6\Util\CliLogger::writeln(sprintf('Old value %s = %s', $dotKey, $choices[$dotKey]));
-        $value = \Topdata\TopdataFoundationSW6\Util\CliLogger::getCliStyle()->ask('Please enter new value:');
+        CliLogger::writeln(sprintf('Old value %s = %s', $dotKey, $choices[$dotKey]));
+        $value = CliLogger::getCliStyle()->ask('Please enter new value:');
         $topConfig->set($dotKey, $value);
 
         $numChanges =$this->topConfigRegistry->persistChanges();
-        \Topdata\TopdataFoundationSW6\Util\CliLogger::writeln(sprintf('%d configuration values were changed', $numChanges));
+        CliLogger::writeln(sprintf('%d configuration values were changed', $numChanges));
 
         return Command::SUCCESS;
     }

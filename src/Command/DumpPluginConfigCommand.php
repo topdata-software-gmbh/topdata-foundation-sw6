@@ -64,7 +64,7 @@ class DumpPluginConfigCommand extends AbstractTopdataCommand
         }
 
         // ---- dump config of given plugin
-        \Topdata\TopdataFoundationSW6\Util\CliLogger::getCliStyle()->section("$pluginName plugin configuration");
+        \Topdata\TopdataFoundationSW6\Util\CliLogger::section("$pluginName plugin configuration");
         $topConfig = $this->topConfigRegistry->getTopConfig($pluginName);
 
         match ($input->getOption('format')) {
