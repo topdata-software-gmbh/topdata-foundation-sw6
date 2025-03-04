@@ -4,9 +4,14 @@ namespace Topdata\TopdataFoundationSW6\Service;
 
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\Uuid\Uuid;
 use Topdata\TopdataFoundationSW6\Constants\TopdataJobStatusConstants;
 use Topdata\TopdataConnectorSW6\Util\ImportReport;
+use Topdata\TopdataFoundationSW6\Core\Content\TopdataReport\TopdataReportEntity;
+use Topdata\TopdataFoundationSW6\Util\CliLogger;
+use Topdata\TopdataFoundationSW6\Util\UtilCli;
 
 /**
  * Service for managing (import) reports
@@ -83,4 +88,39 @@ class TopdataReportService
             ]
         ], Context::createDefaultContext());
     }
+
+    public function findAndMarkCrashedJobs(): int
+    {
+        $criteria = new Criteria();
+        $criteria->addFilter(new EqualsFilter('jobStatus', TopdataJobStatusConstants::RUNNING));
+        /** @var TopdataReportEntity[] $runningJobs */
+        $runningJobs = $this->topdataReportRepository->search($criteria, Context::createDefaultContext());
+        $crashedCount = 0;
+
+        // collect the PIDs of the running jobs
+        foreach ($runningJobs as $job) {
+            if(!$job->getPid()) {
+                CliLogger::warning("Job #{$job->getId()} [{$job->getCommandLine()}] has no PID");
+                continue;
+            }
+            if (!UtilCli::isProcessActive($job->getPid())) {
+                $this->_markJobAsCrashed($job);
+                $crashedCount++;
+                CliLogger::notice("Marked job #{$job->getId()} [{$job->getCommandLine()}] with PID {$job->getPid()} as crashed");
+            }
+        }
+        return $crashedCount;
+    }
+
+    private function _markJobAsCrashed(TopdataReportEntity $jobReport): void
+    {
+        $this->topdataReportRepository->update([
+            [
+                'id'         => $jobReport->getId(),
+                'jobStatus'  => TopdataJobStatusConstants::CRASHED,
+                'finishedAt' => new \DateTime(),
+            ]
+        ], Context::createDefaultContext());
+    }
+
 }

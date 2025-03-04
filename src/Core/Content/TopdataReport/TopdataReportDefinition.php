@@ -7,6 +7,7 @@ use Shopware\Core\Framework\DataAbstractionLayer\Field\DateTimeField;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\Flag\PrimaryKey;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\Flag\Required;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\IdField;
+use Shopware\Core\Framework\DataAbstractionLayer\Field\IntField;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\JsonField;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\StringField;
 use Shopware\Core\Framework\DataAbstractionLayer\FieldCollection;
@@ -40,7 +41,7 @@ class TopdataReportDefinition extends EntityDefinition
             (new StringField('command_line', 'commandLine'))->addFlags(new Required()),
             (new StringField('job_type', 'jobType'))->addFlags(new Required()),
             (new StringField('job_status', 'jobStatus'))->addFlags(new Required()),
-            (new StringField('pid', 'pid'))->addFlags(new Required()),
+            (new IntField('pid', 'pid'))->addFlags(new Required()),
             (new DateTimeField('started_at', 'startedAt'))->addFlags(new Required()),
             (new DateTimeField('finished_at', 'finishedAt')),
             (new JsonField('report_data', 'reportData'))->addFlags(new Required()),

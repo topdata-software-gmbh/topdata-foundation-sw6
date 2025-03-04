@@ -15,7 +15,7 @@ class TopdataReportEntity extends Entity
     protected string $commandLine;
     protected string $jobType;
     protected string $jobStatus;
-    protected string $pid;
+    protected ?int $pid = null;
     protected \DateTimeInterface $startedAt;
     protected ?\DateTimeInterface $finishedAt = null;
     protected array $reportData;
@@ -50,7 +50,7 @@ class TopdataReportEntity extends Entity
         return $this->jobStatus;
     }
 
-    public function getPid(): string
+    public function getPid(): ?int
     {
         return $this->pid;
     }

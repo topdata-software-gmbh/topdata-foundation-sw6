@@ -15,7 +15,35 @@ use Topdata\TopdataFoundationSW6\Helper\CliStyle;
  */
 class UtilCli
 {
-
+    /**
+     * Check if a process with the given PID is still running
+     * 
+     * @param int $pid Process ID to check
+     * @return bool True if process is running, false otherwise
+     */
+    public static function isProcessActive(int $pid): bool
+    {
+        if (empty($pid)) {
+            return false;
+        }
+        
+        // For Linux/Unix systems
+        if (function_exists('posix_kill')) {
+            return posix_kill($pid, 0);
+        }
+        
+        // For Windows systems
+        if (PHP_OS_FAMILY === 'Windows') {
+            $output = [];
+            exec("tasklist /FI \"PID eq $pid\" /NH", $output);
+            return count($output) > 0 && !str_contains($output[0], 'No tasks');
+        }
+        
+        // Fallback using ps command
+        $output = [];
+        exec("ps -p $pid", $output);
+        return count($output) > 1; // Header + process line
+    }
 
     /**
      * Determines the verbosity level based on input options
