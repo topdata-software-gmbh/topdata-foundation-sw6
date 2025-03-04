@@ -12,16 +12,13 @@ class TopdataReportEntity extends Entity
 {
     use EntityIdTrait;
 
-    protected string $status;
     protected string $commandLine;
+    protected string $jobType;
+    protected string $jobStatus;
+    protected string $pid;
     protected \DateTimeInterface $startedAt;
-    protected ?\DateTimeInterface $succeededAt = null;
+    protected ?\DateTimeInterface $finishedAt = null;
     protected array $reportData;
-
-    public function getStatus(): string
-    {
-        return $this->status;
-    }
 
     public function getCommandLine(): string
     {
@@ -33,13 +30,28 @@ class TopdataReportEntity extends Entity
         return $this->startedAt;
     }
 
-    public function getSucceededAt(): ?\DateTimeInterface
+    public function getFinishedAt(): ?\DateTimeInterface
     {
-        return $this->succeededAt;
+        return $this->finishedAt;
     }
 
     public function getReportData(): array
     {
         return $this->reportData;
+    }
+
+    public function getJobType(): string
+    {
+        return $this->jobType;
+    }
+
+    public function getJobStatus(): string
+    {
+        return $this->jobStatus;
+    }
+
+    public function getPid(): string
+    {
+        return $this->pid;
     }
 }

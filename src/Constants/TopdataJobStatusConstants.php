@@ -7,9 +7,10 @@ namespace Topdata\TopdataFoundationSW6\Constants;
  * 
  * 02/2025 created
  */
-class TopdataReportStatusConstants
+class TopdataJobStatusConstants
 {
     public const RUNNING   = 'RUNNING';
     public const SUCCEEDED = 'SUCCEEDED';
-    public const FAILED    = 'FAILED';
+    public const FAILED    = 'FAILED'; // exception got caught
+    public const CRASHED = 'CRASHED'; // it crashed or was interrupted with ctrl+c
 }

@@ -5,7 +5,7 @@ namespace Topdata\TopdataFoundationSW6\Service;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\Uuid\Uuid;
-use Topdata\TopdataFoundationSW6\Constants\TopdataReportStatusConstants;
+use Topdata\TopdataFoundationSW6\Constants\TopdataJobStatusConstants;
 use Topdata\TopdataConnectorSW6\Util\ImportReport;
 
 /**
@@ -22,17 +22,21 @@ class TopdataReportService
     }
 
     /**
-     * TODO: rename or move to TopdataConnectorSW6
-     * Start a new import report
+     * Start create a new job report in the database with status RUNNING
+     *
+     * @param string $jobType see TopdataJobTypeConstants
+     * @param string $commandLine the command line that was used to start the job
      */
-    public function startImport(string $commandLine): string
+    public function newJobReport(string $jobType, string $commandLine): void
     {
         $reportId = Uuid::randomHex();
 
         $this->topdataReportRepository->create([
             [
                 'id'          => $reportId,
-                'status'      => TopdataReportStatusConstants::RUNNING,
+                'pid'         => getmypid(),
+                'jobStatus'   => TopdataJobStatusConstants::RUNNING,
+                'jobType'     => $jobType, // eg WEBSERVICE_IMPORT
                 'commandLine' => $commandLine,
                 'startedAt'   => new \DateTime(),
                 'reportData'  => [],
@@ -40,8 +44,6 @@ class TopdataReportService
         ], Context::createDefaultContext());
 
         $this->currentReportId = $reportId;
-
-        return $reportId;
     }
 
     /**
@@ -55,10 +57,10 @@ class TopdataReportService
 
         $this->topdataReportRepository->update([
             [
-                'id'          => $this->currentReportId,
-                'status'      => TopdataReportStatusConstants::SUCCEEDED,
-                'succeededAt' => new \DateTime(),
-                'reportData'  => $reportData,
+                'id'         => $this->currentReportId,
+                'jobStatus'  => TopdataJobStatusConstants::SUCCEEDED,
+                'finishedAt' => new \DateTime(),
+                'reportData' => $reportData,
             ]
         ], Context::createDefaultContext());
     }
@@ -74,10 +76,10 @@ class TopdataReportService
 
         $this->topdataReportRepository->update([
             [
-                'id'          => $this->currentReportId,
-                'status'      => TopdataReportStatusConstants::FAILED,
-                'succeededAt' => null,
-                'reportData'  => $reportData,
+                'id'         => $this->currentReportId,
+                'jobStatus'  => TopdataJobStatusConstants::FAILED,
+                'finishedAt' => new \DateTime(),
+                'reportData' => $reportData,
             ]
         ], Context::createDefaultContext());
     }

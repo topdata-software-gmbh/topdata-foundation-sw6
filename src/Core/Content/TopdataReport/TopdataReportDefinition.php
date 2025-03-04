@@ -37,10 +37,12 @@ class TopdataReportDefinition extends EntityDefinition
     {
         return new FieldCollection([
             (new IdField('id', 'id'))->addFlags(new Required(), new PrimaryKey()),
-            (new StringField('status', 'status'))->addFlags(new Required()),
             (new StringField('command_line', 'commandLine'))->addFlags(new Required()),
+            (new StringField('job_type', 'jobType'))->addFlags(new Required()),
+            (new StringField('job_status', 'jobStatus'))->addFlags(new Required()),
+            (new StringField('pid', 'pid'))->addFlags(new Required()),
             (new DateTimeField('started_at', 'startedAt'))->addFlags(new Required()),
-            (new DateTimeField('succeeded_at', 'succeededAt')),
+            (new DateTimeField('finished_at', 'finishedAt')),
             (new JsonField('report_data', 'reportData'))->addFlags(new Required()),
         ]);
     }

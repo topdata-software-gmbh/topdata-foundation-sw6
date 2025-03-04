@@ -15,6 +15,10 @@ use Topdata\TopdataFoundationSW6\Helper\CliStyle;
 class CliLogger
 {
     private static CliStyle $_cliStyle;
+    /**
+     * see self::lap()
+     */
+    private static float $microtime;
 
 
     /**
@@ -165,5 +169,85 @@ class CliLogger
             dump(...func_get_args());
         }
     }
+
+
+    /**
+     * 03/2025 extracted from ProgressLoggingService
+     */
+    private static function isCLi(): bool
+    {
+        return php_sapi_name() == 'cli';
+    }
+
+    /**
+     * 03/2025 extracted from ProgressLoggingService
+     */
+    private static function getNewline(): string
+    {
+        if (self::isCli()) {
+            return "\n";
+        } else {
+            return '<br>';
+        }
+    }
+
+    /**
+     * 03/2025 extracted from ProgressLoggingService
+     */
+    private static function _getCaller()
+    {
+        $ddSource = debug_backtrace()[1];
+
+        return basename($ddSource['file']) . ':' . $ddSource['line'] . self::getNewline();
+    }
+
+    /**
+     * 03/2025 extracted from ProgressLoggingService
+     *
+     * Helper method for logging stuff to stdout with right-aligned caller information.
+     */
+    public static function activity(string $str = '.', bool $newLine = false): void
+    {
+        // Get terminal width, default to 80 if can't determine
+        $terminalWidth = (int) (`tput cols` ?? 80);
+        // Get caller information
+        $caller = self::_getCaller();
+        $callerLength = strlen($caller);
+
+        // Calculate padding needed
+        $messageLength = strlen($str);
+        $padding = max(0, $terminalWidth - $messageLength - $callerLength);
+
+        // Write the message, padding, and caller
+        CliLogger::getCliStyle()->write($str);
+        CliLogger::getCliStyle()->write(str_repeat(' ', $padding));
+        CliLogger::getCliStyle()->write($caller, $newLine);
+    }
+
+    /**
+     * 03/2025 extracted from ProgressLoggingService
+     */
+    public static function mem(): void
+    {
+        self::activity('[' . round(memory_get_usage(true) / 1024 / 1024) . 'Mb]');
+    }
+
+    /**
+     * 03/2025 extracted from ProgressLoggingService
+     */
+    public static  function lap($start = false): string
+    {
+        if ($start) {
+            self::$microtime = microtime(true);
+
+            return '';
+        }
+        $lapTime = microtime(true) - self::$microtime;
+        self::$microtime = microtime(true);
+
+        return (string)round($lapTime, 3);
+    }
+
+
 
 }
