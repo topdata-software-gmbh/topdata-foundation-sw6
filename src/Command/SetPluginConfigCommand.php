@@ -59,7 +59,7 @@ class SetPluginConfigCommand extends AbstractTopdataCommand
         }
 
         // ---- set config of given plugin
-        $this->cliStyle->section("$pluginName plugin configuration");
+        \Topdata\TopdataFoundationSW6\Util\CliLogger::getCliStyle()->section("$pluginName plugin configuration");
         $topConfig = $this->topConfigRegistry->getTopConfig($pluginName);
 
         // ---- get all config keys and let user choose
@@ -73,12 +73,12 @@ class SetPluginConfigCommand extends AbstractTopdataCommand
         $dotKey = $helper->ask($input, $output, $question);
 
         // ---- print old value and let user choose new value
-        $this->cliStyle->writeln(sprintf('Old value %s = %s', $dotKey, $choices[$dotKey]));
-        $value = $this->cliStyle->ask('Please enter new value:');
+        \Topdata\TopdataFoundationSW6\Util\CliLogger::writeln(sprintf('Old value %s = %s', $dotKey, $choices[$dotKey]));
+        $value = \Topdata\TopdataFoundationSW6\Util\CliLogger::getCliStyle()->ask('Please enter new value:');
         $topConfig->set($dotKey, $value);
 
         $numChanges =$this->topConfigRegistry->persistChanges();
-        $this->cliStyle->writeln(sprintf('%d configuration values were changed', $numChanges));
+        \Topdata\TopdataFoundationSW6\Util\CliLogger::writeln(sprintf('%d configuration values were changed', $numChanges));
 
         return Command::SUCCESS;
     }

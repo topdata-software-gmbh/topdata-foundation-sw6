@@ -64,16 +64,16 @@ class DumpPluginConfigCommand extends AbstractTopdataCommand
         }
 
         // ---- dump config of given plugin
-        $this->cliStyle->section("$pluginName plugin configuration");
+        \Topdata\TopdataFoundationSW6\Util\CliLogger::getCliStyle()->section("$pluginName plugin configuration");
         $topConfig = $this->topConfigRegistry->getTopConfig($pluginName);
 
         match ($input->getOption('format')) {
-            'toml'  => $this->cliStyle->writeln(UtilToml::flatConfigToToml($topConfig->getFlatConfig())),
-            'yaml'  => $this->cliStyle->writeln(Yaml::dump($topConfig->getNestedConfig())),
-            'json'  => $this->cliStyle->writeln(json_encode($topConfig->getNestedConfig(), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)),
-            'tree'  => $this->cliStyle->writeln(UtilAsciiTree::tree($topConfig->getNestedConfig())),
-            'flat'  => $this->cliStyle->dumpDict($topConfig->getFlatConfig()),
-            'sys'   => $this->cliStyle->dumpDict($topConfig->getSystemConfig()),
+            'toml'  => \Topdata\TopdataFoundationSW6\Util\CliLogger::writeln(UtilToml::flatConfigToToml($topConfig->getFlatConfig())),
+            'yaml'  => \Topdata\TopdataFoundationSW6\Util\CliLogger::writeln(Yaml::dump($topConfig->getNestedConfig())),
+            'json'  => \Topdata\TopdataFoundationSW6\Util\CliLogger::writeln(json_encode($topConfig->getNestedConfig(), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)),
+            'tree'  => \Topdata\TopdataFoundationSW6\Util\CliLogger::writeln(UtilAsciiTree::tree($topConfig->getNestedConfig())),
+            'flat'  => \Topdata\TopdataFoundationSW6\Util\CliLogger::getCliStyle()->dumpDict($topConfig->getFlatConfig()),
+            'sys'   => \Topdata\TopdataFoundationSW6\Util\CliLogger::getCliStyle()->dumpDict($topConfig->getSystemConfig()),
             default => throw new \InvalidArgumentException("Invalid format: {$input->getOption('format')}, available formats: toml, yaml, json, tree, flat, sys")
         };
 

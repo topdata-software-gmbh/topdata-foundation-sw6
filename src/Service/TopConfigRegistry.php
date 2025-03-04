@@ -6,7 +6,6 @@ use RuntimeException;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Topdata\TopdataFoundationSW6\DTO\TopConfig;
 use Topdata\TopdataFoundationSW6\Exception\PluginNotRegisteredException;
-use Topdata\TopdataFoundationSW6\Trait\CliStyleTrait;
 use Topdata\TopdataFoundationSW6\Util\UtilPlugin;
 
 /**
@@ -17,7 +16,6 @@ use Topdata\TopdataFoundationSW6\Util\UtilPlugin;
  */
 class TopConfigRegistry
 {
-    use CliStyleTrait;
 
     /**
      * @var array The registered plugin configurations, format: [pluginName => ['pluginSystemConfig' => [], 'mapping' => []]]
@@ -31,7 +29,6 @@ class TopConfigRegistry
         private readonly SystemConfigService $systemConfigService
     )
     {
-        $this->beVerboseOnCli();
     }
 
     /**
@@ -45,7 +42,7 @@ class TopConfigRegistry
         $pluginName = UtilPlugin::extractPluginName($pluginClass);
         $pluginSystemConfig = $this->systemConfigService->get($pluginName . '.config');
         if ($pluginSystemConfig === null) {
-            $this->cliStyle->warning("plugin $pluginName has no config");
+            \Topdata\TopdataFoundationSW6\Util\CliLogger::warning("plugin $pluginName has no config");
             $pluginSystemConfig = [];
         }
         $completeMapping = $this->_getCompleteMapping($pluginSystemConfig, $configMapping);

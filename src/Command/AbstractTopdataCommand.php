@@ -76,11 +76,9 @@ abstract class AbstractTopdataCommand extends Command
             $output = new NullOutput();
         }
 
-        $this->cliStyle = new CliStyle($input, $output);
-
         // ---- print current date name + description
         $now = (new \DateTime('now', new \DateTimeZone('Europe/Berlin')))->format('Y-m-d H:i');
-        $this->cliStyle->title($now . ' - ' . $this->getName() . ' - ' . $this->getDescription());
+        \Topdata\TopdataFoundationSW6\Util\CliLogger::title($now . ' - ' . $this->getName() . ' - ' . $this->getDescription());
 
         // ---- dump arguments and options
         self::_dumpArgsAndOptions($input);
@@ -109,12 +107,12 @@ abstract class AbstractTopdataCommand extends Command
         $options = $this->_getFilteredCommandLineArgs($input);
 
         if (empty($arguments) && empty($options)) {
-            $this->cliStyle->writeln('<gray>No arguments or options found.</gray>');
+            \Topdata\TopdataFoundationSW6\Util\CliLogger::writeln('<gray>No arguments or options found.</gray>');
             return;
         }
 
         // ---- build table
-        $tbl = $this->cliStyle->createTable();
+        $tbl = \Topdata\TopdataFoundationSW6\Util\CliLogger::getCliStyle()->createTable();
         $tbl->setHorizontal(false);
         $tbl->setHeaderTitle('Args and Opts');
         $tbl->setHeaders(['Key', 'Value']);
@@ -138,7 +136,7 @@ abstract class AbstractTopdataCommand extends Command
         $tbl->setRows($rows);
 
         $tbl->render();
-        $this->cliStyle->newLine();
+        \Topdata\TopdataFoundationSW6\Util\CliLogger::getCliStyle()->newLine();
     }
 
     /**
@@ -148,6 +146,6 @@ abstract class AbstractTopdataCommand extends Command
      */
     protected function done()
     {
-        $this->cliStyle->done('DONE ' . $this->getName() . ' [' . UtilFormatter::formatBytes(memory_get_peak_usage(true)) . ' / ' . UtilFormatter::formatDuration(microtime(true) - $this->_startTime, 2) . ']');
+        \Topdata\TopdataFoundationSW6\Util\CliLogger::getCliStyle()->done('DONE ' . $this->getName() . ' [' . UtilFormatter::formatBytes(memory_get_peak_usage(true)) . ' / ' . UtilFormatter::formatDuration(microtime(true) - $this->_startTime, 2) . ']');
     }
 }

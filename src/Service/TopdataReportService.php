@@ -58,7 +58,7 @@ class TopdataReportService
                 'id'          => $this->currentReportId,
                 'status'      => TopdataReportStatusConstants::SUCCEEDED,
                 'succeededAt' => new \DateTime(),
-                'reportData'  => json_encode($reportData),
+                'reportData'  => $reportData,
             ]
         ], Context::createDefaultContext());
     }
@@ -76,8 +76,8 @@ class TopdataReportService
             [
                 'id'          => $this->currentReportId,
                 'status'      => TopdataReportStatusConstants::FAILED,
-                'succeededAt' => new \DateTime(),
-                'reportData'  => json_encode($reportData),
+                'succeededAt' => null,
+                'reportData'  => $reportData,
             ]
         ], Context::createDefaultContext());
     }

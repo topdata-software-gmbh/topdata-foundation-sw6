@@ -2,11 +2,13 @@
 
 namespace Topdata\TopdataFoundationSW6\Util;
 
+use Symfony\Component\Console\Input\ArrayInput;
+use Symfony\Component\Console\Output\ConsoleOutput;
 use Topdata\TopdataFoundationSW6\Core\Content\TopdataReport\TopdataReportEntity;
 use Topdata\TopdataFoundationSW6\Helper\CliStyle;
 
 /**
- * static class for logging
+ * static class for logging .. basically a facade for the CliStyle class
  *
  * 03/2025 created
  */
@@ -36,12 +38,12 @@ class CliLogger
 
     }
 
-    public static function warning(string $string): void
+    public static function warning(string $msg): void
     {
         // yellow background, black text
         // self::writeln("[W]\t\033[43m\033[30m" . $msg . "\033[0m");
 
-        self::getCliStyle()->writeln("⚠️ Warning: $string");
+        self::getCliStyle()->writeln("⚠️ [Warning] $msg");
     }
 
     public static function error(string $msg): void
@@ -49,7 +51,7 @@ class CliLogger
         // red background, white text
         // self::writeln("[E]\t\033[41m\033[37m" . $msg . "\033[0m");
 
-        self::getCliStyle()->writeln("❌ Error: $msg");
+        self::getCliStyle()->writeln("❌ [Error] $msg");
     }
 
     public static function success(string $msg): void
@@ -58,8 +60,7 @@ class CliLogger
     }
 
 
-
-    private static function getCliStyle()
+    public static function getCliStyle(): CliStyle
     {
         if (!isset(self::$_cliStyle)) {
             self::$_cliStyle = new CliStyle(new ArrayInput([]), new ConsoleOutput());
@@ -84,11 +85,12 @@ class CliLogger
      */
     public static function writeln(string $msg = ''): void
     {
-        if(php_sapi_name() === 'cli') {
-            return;
-        }
-
-        echo $msg . "\n";
+//        if(php_sapi_name() !== 'cli') {
+//            return;
+//        }
+//
+//        echo $msg . "\n";
+        self::getCliStyle()->writeln($msg);
     }
 
     public static function red(string $msg): void
@@ -147,9 +149,9 @@ class CliLogger
 
 
 
-    public static function title(string $string): void
+    public static function title(string $msg): void
     {
-        self::getCliStyle()->title($string);
+        self::getCliStyle()->title($msg);
     }
 
 
@@ -159,17 +161,9 @@ class CliLogger
     public static function dump()
     {
         // only if we are in cli mode
-        if(php_sapi_name() === 'cli') {
+        if(php_sapi_name() !== 'cli') {
             dump(...func_get_args());
         }
     }
-
-    /**
-     * 03/2025 created
-     */
-    public static function dictAsHorizontalTable(array $array, ?string $title = null): void
-    {
-        self::getCliStyle()->dictAsHorizontalTable($array, $title);
-    }    
 
 }

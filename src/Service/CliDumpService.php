@@ -2,14 +2,14 @@
 
 namespace Topdata\TopdataFoundationSW6\Service;
 
-use Topdata\TopdataFoundationSW6\Trait\CliStyleTrait;
+
+use Topdata\TopdataFoundationSW6\Util\CliLogger;
 
 /**
  * 11/2024 created
  */
 class CliDumpService
 {
-    use CliStyleTrait;
 
 
     public function __construct(
@@ -17,7 +17,6 @@ class CliDumpService
         private readonly PluginHelperService $pluginHelperService,
     )
     {
-        $this->beVerboseOnCli();
     }
 
     /**
@@ -36,6 +35,6 @@ class CliDumpService
             ];
         }
 
-        $this->cliStyle->listOfDictsAsTable($table, 'Registered Plugins');
+        CliLogger::getCliStyle()->listOfDictsAsTable($table, 'Registered Plugins');
     }
 }
