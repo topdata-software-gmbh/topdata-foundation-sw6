@@ -165,7 +165,7 @@ class CliLogger
     public static function dump()
     {
         // only if we are in cli mode
-        if(php_sapi_name() !== 'cli') {
+        if(self::isCLi()) {
             dump(...func_get_args());
         }
     }

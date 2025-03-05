@@ -5,6 +5,7 @@ namespace Topdata\TopdataFoundationSW6\Command;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Topdata\TopdataFoundationSW6\Service\TopdataReportService;
 use Topdata\TopdataFoundationSW6\Util\CliLogger;
@@ -23,7 +24,13 @@ class CheckCrashedJobsCommand extends AbstractTopdataCommand
 
     protected function configure(): void
     {
-        $this->setHelp('This command checks for jobs that are marked as running but have no active process.');
+        $this->setHelp('This command checks for jobs that are marked as running but have no active process.')
+            ->addOption(
+                'delete-no-pid',
+                null,
+                InputOption::VALUE_NONE,
+                'Delete reports that have no PID associated'
+            );
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -31,8 +38,25 @@ class CheckCrashedJobsCommand extends AbstractTopdataCommand
         CliLogger::title('Checking for crashed jobs');
 
         $crashedCount = $this->topdataReportService->findAndMarkCrashedJobs();
+        $deletedCount = 0;
 
-        CliLogger::success("Marked $crashedCount jobs as crashed");
+        // New functionality for deleting reports with no PID
+        if ($input->getOption('delete-no-pid')) {
+            $noPidReports = $this->topdataReportService->findReportsWithNoPid();
+            $deletedCount = $noPidReports->count();
+            
+            if ($deletedCount > 0) {
+                $this->topdataReportService->deleteReports($noPidReports);
+                CliLogger::notice("Deleted $deletedCount reports with no PID");
+            }
+        }
+
+        $successMessage = "Marked $crashedCount jobs as crashed";
+        if ($deletedCount > 0) {
+            $successMessage .= " and deleted $deletedCount reports with no PID";
+        }
+        CliLogger::success($successMessage);
+
         return Command::SUCCESS;
     }
 }

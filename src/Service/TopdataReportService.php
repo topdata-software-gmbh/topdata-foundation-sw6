@@ -3,6 +3,7 @@
 namespace Topdata\TopdataFoundationSW6\Service;
 
 use Shopware\Core\Framework\Context;
+use Shopware\Core\Framework\DataAbstractionLayer\EntityCollection;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
@@ -123,4 +124,25 @@ class TopdataReportService
         ], Context::createDefaultContext());
     }
 
+    /**
+     * Find all reports that have no PID associated
+     */
+    public function findReportsWithNoPid(): EntityCollection
+    {
+        $criteria = new Criteria();
+        $criteria->addFilter(new EqualsFilter('pid', null));
+        return $this->topdataReportRepository->search($criteria, Context::createDefaultContext())->getEntities();
+    }
+
+    /**
+     * Delete a collection of reports
+     */
+    public function deleteReports(EntityCollection $reports): void
+    {
+        $ids = array_values(array_map(function(TopdataReportEntity $report) {
+            return ['id' => $report->getId()];
+        }, $reports->getElements()));
+
+        $this->topdataReportRepository->delete($ids, Context::createDefaultContext());
+    }
 }
