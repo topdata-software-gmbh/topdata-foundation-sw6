@@ -23,7 +23,7 @@ class UtilToml
 //        try {
 //            $nested = UtilConfigTransformation::flatToNested($flatConfig);
 //            return self::_nestedToToml($nested);
-//        } catch (\Exception $e) {
+//        } catch (\Throwable $e) {
 //            throw new \RuntimeException("Failed to convert configuration to TOML: " . $e->getMessage());
 //        }
 //    }
