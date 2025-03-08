@@ -248,6 +248,10 @@ class CliLogger
         return (string)round($lapTime, 3);
     }
 
+    public function done(): void
+    {
+        self::getCliStyle()->writeln('✨ 🌟 ✨ DONE ✨ 🌟 ✨');
+    }
 
 
 }
