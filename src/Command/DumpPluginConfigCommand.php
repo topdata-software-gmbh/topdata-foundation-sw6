@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Topdata\TopdataFoundationSW6\Command;
 
+use InvalidArgumentException;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -12,8 +13,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Yaml\Yaml;
 use Topdata\TopdataFoundationSW6\Service\CliDumpService;
-use Topdata\TopdataFoundationSW6\Service\PluginHelperService;
 use Topdata\TopdataFoundationSW6\Service\TopConfigRegistry;
+use Topdata\TopdataFoundationSW6\Util\CliLogger;
 use Topdata\TopdataFoundationSW6\Util\Configuration\UtilAsciiTree;
 use Topdata\TopdataFoundationSW6\Util\Configuration\UtilToml;
 
@@ -64,17 +65,17 @@ class DumpPluginConfigCommand extends AbstractTopdataCommand
         }
 
         // ---- dump config of given plugin
-        \Topdata\TopdataFoundationSW6\Util\CliLogger::section("$pluginName plugin configuration");
+        CliLogger::section("$pluginName plugin configuration");
         $topConfig = $this->topConfigRegistry->getTopConfig($pluginName);
 
         match ($input->getOption('format')) {
-            'toml'  => \Topdata\TopdataFoundationSW6\Util\CliLogger::writeln(UtilToml::flatConfigToToml($topConfig->getFlatConfig())),
-            'yaml'  => \Topdata\TopdataFoundationSW6\Util\CliLogger::writeln(Yaml::dump($topConfig->getNestedConfig())),
-            'json'  => \Topdata\TopdataFoundationSW6\Util\CliLogger::writeln(json_encode($topConfig->getNestedConfig(), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)),
-            'tree'  => \Topdata\TopdataFoundationSW6\Util\CliLogger::writeln(UtilAsciiTree::tree($topConfig->getNestedConfig())),
-            'flat'  => \Topdata\TopdataFoundationSW6\Util\CliLogger::getCliStyle()->dumpDict($topConfig->getFlatConfig()),
-            'sys'   => \Topdata\TopdataFoundationSW6\Util\CliLogger::getCliStyle()->dumpDict($topConfig->getSystemConfig()),
-            default => throw new \InvalidArgumentException("Invalid format: {$input->getOption('format')}, available formats: toml, yaml, json, tree, flat, sys")
+            'toml'  => CliLogger::writeln(UtilToml::flatConfigToToml($topConfig->getFlatConfig())),
+            'yaml'  => CliLogger::writeln(Yaml::dump($topConfig->getNestedConfig())),
+            'json'  => CliLogger::writeln(json_encode($topConfig->getNestedConfig(), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)),
+            'tree'  => CliLogger::writeln(UtilAsciiTree::tree($topConfig->getNestedConfig())),
+            'flat'  => CliLogger::getCliStyle()->dumpDict($topConfig->getFlatConfig()),
+            'sys'   => CliLogger::getCliStyle()->dumpDict($topConfig->getSystemConfig()),
+            default => throw new InvalidArgumentException("Invalid format: {$input->getOption('format')}, available formats: toml, yaml, json, tree, flat, sys")
         };
 
         return Command::SUCCESS;
