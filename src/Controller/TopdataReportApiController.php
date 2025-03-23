@@ -72,6 +72,7 @@ class TopdataReportApiController extends AbstractTopdataApiController
     public function logoutAction(Request $request): Response
     {
         $request->getSession()->remove('topdata_reports_authenticated');
+        $this->addFlash('success', 'You have been logged out.');
         return $this->redirectToRoute('topdata.foundation.reports.login');
     }
 }
