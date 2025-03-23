@@ -172,4 +172,12 @@ class TopdataReportService
             ->search($criteria, Context::createDefaultContext())
             ->getEntities();
     }
+
+    public function getReportById(string $id): ?TopdataReportEntity
+    {
+        $criteria = new Criteria();
+        $criteria->addFilter(new EqualsFilter('id', $id));
+
+        return $this->topdataReportRepository->search($criteria, Context::createDefaultContext())->first();
+    }
 }

@@ -1,0 +1,28 @@
+{% extends '@TopdataFoundationSW6/storefront/layout/base.html.twig' %}
+
+{% block title %}Report Details{% endblock %}
+
+{% block content %}
+    <h1>Report Details</h1>
+
+    <p><strong>Start Time:</strong> {{ report.startedAt|date('d.m.Y H:i') }}</p>
+    <p><strong>Type:</strong> {{ report.jobType }}</p>
+    <p><strong>Status:</strong> <span class="status-badge status-{{ report.jobStatus|lower }}">{{ report.jobStatus }}</span></p>
+    <p><strong>Command:</strong> {{ report.commandLine }}</p>
+    <p><strong>Duration:</strong>
+        {% if report.finishedAt %}
+            {{ report.startedAt.diff(report.finishedAt)|date('%H:%I:%S') }}
+        {% else %}
+            Running...
+        {% endif %}
+    </p>
+    <p><strong>PID:</strong> {{ report.pid }}</p>
+
+    <h2>Additional Information</h2>
+    <pre>
+        {{ report|json_encode(constant('JSON_PRETTY_PRINT')) }}
+    </pre>
+
+    <a href="{{ path('topdata.foundation.reports') }}">Back to Reports List</a>
+
+{% endblock %}

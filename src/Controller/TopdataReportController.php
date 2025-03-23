@@ -9,15 +9,23 @@ use Symfony\Component\Routing\Annotation\Route;
 use Topdata\TopdataFoundationSW6\Service\TopdataReportService;
 
 /**
+ * Handles report-related actions, including authentication and displaying reports.
  * 03/2025 created
  */
-class TopdataReportApiController extends AbstractTopdataApiController
+class TopdataReportController extends AbstractTopdataApiController
 {
     public function __construct(
         private readonly TopdataReportService $reportService
     ) {
     }
 
+    /**
+     * Retrieves and displays the latest reports.
+     *
+     * @param Request $request The HTTP request.
+     * @return Response The HTTP response.
+     * @throws Exception
+     */
     #[Route(
         path: '/topdata-foundation/reports',
         name: 'topdata.foundation.reports',
@@ -28,11 +36,13 @@ class TopdataReportApiController extends AbstractTopdataApiController
     public function getLatestReportsAction(Request $request): Response
     {
         try {
+            // ---- Check if the user is authenticated
             if (!$request->getSession()->get('topdata_reports_authenticated', false)) {
                 $this->addFlash('error', 'Not authenticated');
                 return $this->redirectToRoute('topdata.foundation.reports.login');
             }
 
+            // ---- Render the reports template with the latest reports
             return $this->render('@TopdataFoundationSW6/storefront/page/content/reports.html.twig', [
                 'reports' => $this->reportService->getLatestReports()
             ]);
@@ -41,6 +51,12 @@ class TopdataReportApiController extends AbstractTopdataApiController
         }
     }
 
+    /**
+     * Handles the login action for accessing reports.
+     *
+     * @param Request $request The HTTP request.
+     * @return Response The HTTP response.
+     */
     #[Route(
         path: '/topdata-foundation/reports/login',
         name: 'topdata.foundation.reports.login',
@@ -50,8 +66,10 @@ class TopdataReportApiController extends AbstractTopdataApiController
     )]
     public function loginAction(Request $request): Response
     {
+        // ---- Handle POST request (login attempt)
         if ($request->isMethod('POST')) {
             $password = $request->request->get('password');
+            // ---- Validate the password
             if ($this->reportService->validateReportsPassword($password)) {
                 $request->getSession()->set('topdata_reports_authenticated', true);
 
@@ -59,9 +77,16 @@ class TopdataReportApiController extends AbstractTopdataApiController
             }
             $this->addFlash('error', 'Invalid password');
         }
+        // ---- Render the login form
         return $this->render('@TopdataFoundationSW6/storefront/page/content/login.html.twig');
     }
 
+    /**
+     * Handles the logout action.
+     *
+     * @param Request $request The HTTP request.
+     * @return Response The HTTP response.
+     */
     #[Route(
         path: '/topdata-foundation/reports/logout',
         name: 'topdata.foundation.reports.logout',
@@ -71,8 +96,52 @@ class TopdataReportApiController extends AbstractTopdataApiController
     )]
     public function logoutAction(Request $request): Response
     {
+        // ---- Remove the authentication flag from the session
         $request->getSession()->remove('topdata_reports_authenticated');
         $this->addFlash('success', 'You have been logged out.');
         return $this->redirectToRoute('topdata.foundation.reports.login');
+    }
+
+    /**
+     * Retrieves and displays the details of a specific report.
+     *
+     * @param Request $request The HTTP request.
+     * @param string $id The ID of the report.
+     * @return Response The HTTP response.
+     * @throws Exception
+     */
+    #[Route(
+        path: '/topdata/report/detail/{id}',
+        name: 'topdata.foundation.report.detail',
+        defaults: ['_routeScope' => ['storefront']],
+        methods: ['GET'],
+        requirements: ['_format' => 'html']
+    )]
+    public function getReportDetailAction(Request $request, string $id): Response
+    {
+        try {
+            // ---- Check if the user is authenticated
+            if (!$request->getSession()->get('topdata_reports_authenticated', false)) {
+                $this->addFlash('error', 'Not authenticated');
+                return $this->redirectToRoute('topdata.foundation.reports.login');
+            }
+
+            // ---- Retrieve the report by ID
+            $report = $this->reportService->getReportById($id);
+
+            // ---- Check if the report exists
+            if (!$report) {
+                $this->addFlash('error', 'Report not found');
+                return $this->redirectToRoute('topdata.foundation.reports');
+            }
+
+            // ---- Render the detailed report template
+            return $this->render('@TopdataFoundationSW6/storefront/page/content/detailed_report.html.twig', [
+                'report' => $report,
+            ]);
+
+        } catch (Exception $e) {
+            return $this->errorResponse($e->getMessage());
+        }
     }
 }
