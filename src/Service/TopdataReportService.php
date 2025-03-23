@@ -13,6 +13,8 @@ use Topdata\TopdataConnectorSW6\Util\ImportReport;
 use Topdata\TopdataFoundationSW6\Core\Content\TopdataReport\TopdataReportEntity;
 use Topdata\TopdataFoundationSW6\Util\CliLogger;
 use Topdata\TopdataFoundationSW6\Util\UtilCli;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Sorting\FieldSorting;
+
 
 /**
  * Service for managing (import) reports
@@ -149,7 +151,7 @@ class TopdataReportService
     public function getLatestReports(int $limit = 10): EntityCollection
     {
         $criteria = new Criteria();
-        $criteria->addSorting(Criteria::DESC('startedAt'));
+        $criteria->addSorting(new FieldSorting('startedAt', FieldSorting::DESCENDING));
         $criteria->setLimit($limit);
         
         return $this->topdataReportRepository

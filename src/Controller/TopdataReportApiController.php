@@ -20,7 +20,7 @@ class TopdataReportApiController extends AbstractTopdataApiController
     #[Route(
         path: '/topdata-foundation/reports',
         name: 'topdata.foundation.reports',
-        defaults: ['_routeScope' => ['api']],
+        defaults: ['_routeScope' => ['storefront']],
         methods: ['GET'],
     )]
     public function getLatestReports(): JsonResponse
