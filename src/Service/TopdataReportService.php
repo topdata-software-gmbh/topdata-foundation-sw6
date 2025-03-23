@@ -14,6 +14,7 @@ use Topdata\TopdataFoundationSW6\Core\Content\TopdataReport\TopdataReportEntity;
 use Topdata\TopdataFoundationSW6\Util\CliLogger;
 use Topdata\TopdataFoundationSW6\Util\UtilCli;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Sorting\FieldSorting;
+use Shopware\Core\System\SystemConfig\SystemConfigService;
 
 
 /**
@@ -24,8 +25,8 @@ class TopdataReportService
     private ?string $currentReportId = null;
 
     public function __construct(
-        private readonly EntityRepository $topdataReportRepository,
-        private readonly TopConfigRegistry $configRegistry
+        private readonly EntityRepository    $topdataReportRepository,
+        private readonly SystemConfigService $systemConfigService
     )
     {
     }
@@ -103,7 +104,7 @@ class TopdataReportService
 
         // collect the PIDs of the running jobs
         foreach ($runningJobs as $job) {
-            if(!$job->getPid()) {
+            if (!$job->getPid()) {
                 CliLogger::warning("Job #{$job->getId()} [{$job->getCommandLine()}] has no PID");
                 continue;
             }
@@ -142,7 +143,7 @@ class TopdataReportService
      */
     public function deleteReports(EntityCollection $reports): void
     {
-        $ids = array_values(array_map(function(TopdataReportEntity $report) {
+        $ids = array_values(array_map(function (TopdataReportEntity $report) {
             return ['id' => $report->getId()];
         }, $reports->getElements()));
 
@@ -151,14 +152,14 @@ class TopdataReportService
 
     public function validateReportsPassword(string $password): bool
     {
-        $hash = $this->configRegistry->get('reportsPasswordHash');
-        return password_verify($password, $hash);
+        $hash = $this->systemConfigService->get('TopdataFoundationSW6.config.reportsPasswordHash');
+        return $hash && password_verify($password, $hash);
     }
 
     public function setReportsPassword(string $password): void
     {
         $hash = password_hash($password, PASSWORD_DEFAULT);
-        $this->configRegistry->set('reportsPasswordHash', $hash);
+        $this->systemConfigService->set('TopdataFoundationSW6.config.reportsPasswordHash', $hash);
     }
 
     public function getLatestReports(int $limit = 10): EntityCollection
@@ -166,7 +167,7 @@ class TopdataReportService
         $criteria = new Criteria();
         $criteria->addSorting(new FieldSorting('startedAt', FieldSorting::DESCENDING));
         $criteria->setLimit($limit);
-        
+
         return $this->topdataReportRepository
             ->search($criteria, Context::createDefaultContext())
             ->getEntities();

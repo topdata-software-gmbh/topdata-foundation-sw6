@@ -7,13 +7,15 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Topdata\TopdataFoundationSW6\Service\TopdataReportService;
+use Shopware\Core\System\SystemConfig\SystemConfigService;
 
 class SetReportsPasswordCommand extends Command
 {
     protected static $defaultName = 'topdata:reports:set-password';
 
     public function __construct(
-        private readonly TopdataReportService $reportService
+        private readonly TopdataReportService $reportService,
+        private readonly SystemConfigService $systemConfigService
     ) {
         parent::__construct();
     }
