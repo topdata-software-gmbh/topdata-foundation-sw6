@@ -2,6 +2,7 @@
 
 namespace Topdata\TopdataFoundationSW6\Command;
 
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -9,10 +10,12 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Topdata\TopdataFoundationSW6\Service\TopdataReportService;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 
-class SetReportsPasswordCommand extends Command
+#[AsCommand(
+    name: 'topdata:foundation:reports:set-password',
+    description: 'Set password for reports access',
+)]
+class SetReportsPasswordCommand extends AbstractTopdataCommand
 {
-    protected static $defaultName = 'topdata:reports:set-password';
-
     public function __construct(
         private readonly TopdataReportService $reportService,
         private readonly SystemConfigService $systemConfigService
@@ -20,19 +23,20 @@ class SetReportsPasswordCommand extends Command
         parent::__construct();
     }
 
-    protected function configure(): void
-    {
-        $this
-            ->setDescription('Set password for reports access')
-            ->addArgument('password', InputArgument::REQUIRED, 'New password');
+
+    protected function configure(): void {
+        $this->addArgument('password', InputArgument::REQUIRED, 'New password');
     }
+
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $password = $input->getArgument('password');
         $this->reportService->setReportsPassword($password);
         $output->writeln('Password updated successfully');
-        
+
+        $this->done();
+
         return Command::SUCCESS;
     }
 }

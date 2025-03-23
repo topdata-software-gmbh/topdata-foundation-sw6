@@ -45,6 +45,9 @@
         <service id="Topdata\TopdataFoundationSW6\Command\CheckCrashedJobsCommand" autowire="true">
             <tag name="console.command"/>
         </service>
+        <service id="Topdata\TopdataFoundationSW6\Command\SetReportsPasswordCommand" autowire="true">
+            <tag name="console.command"/>
+        </service>
 
     </services>
 </container>
