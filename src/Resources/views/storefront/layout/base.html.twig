@@ -57,6 +57,15 @@
 </head>
 <body>
     <div class="content-wrapper">
+        {% block flash_messages %}
+            {% for type, messages in app.flashes %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ type }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endfor %}
+        {% endblock %}
         {% block content %}{% endblock %}
     </div>
 </body>
