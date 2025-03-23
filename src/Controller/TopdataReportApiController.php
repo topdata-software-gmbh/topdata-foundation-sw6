@@ -3,7 +3,7 @@
 namespace Topdata\TopdataFoundationSW6\Controller;
 
 use Exception;
-use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Topdata\TopdataFoundationSW6\Service\TopdataReportService;
 
@@ -22,12 +22,15 @@ class TopdataReportApiController extends AbstractTopdataApiController
         name: 'topdata.foundation.reports',
         defaults: ['_routeScope' => ['storefront']],
         methods: ['GET'],
+        requirements: ['_format' => 'html']
     )]
-    public function getLatestReports(): JsonResponse
+    public function getLatestReports(): Response
     {
         try {
             $reports = $this->reportService->getLatestReports();
-            return $this->payloadResponse($reports);
+            return $this->render('@TopdataFoundationSW6/storefront/page/content/reports.html.twig', [
+                'reports' => $reports
+            ]);
         } catch (Exception $e) {
             return $this->errorResponse($e->getMessage());
         }

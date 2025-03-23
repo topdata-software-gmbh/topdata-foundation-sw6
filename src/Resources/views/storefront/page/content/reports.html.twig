@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Import Reports</title>
+    <style>
+        .td-report-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 25px 0;
+            font-family: sans-serif;
+            box-shadow: 0 0 20px rgba(0,0,0,0.15);
+        }
+
+        h1 {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        h1 {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        h1 {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+        .td-report-table thead tr {
+            background-color: #5085A9;
+            color: #ffffff;
+            text-align: left;
+        }
+        .td-report-table th,
+        .td-report-table td {
+            padding: 12px 15px;
+        }
+        .td-report-table tbody tr {
+            border-bottom: 1px solid #dddddd;
+        }
+        .td-report-table tbody tr:nth-of-type(even) {
+            background-color: #f3f3f3;
+        }
+        .td-report-table tbody tr:last-of-type {
+            border-bottom: 2px solid #5085A9;
+        }
+        .td-report-table tbody tr:hover {
+            background-color: #f0f6fc;
+            cursor: pointer;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+        .status-running { background-color: #5085A9; color: white; }
+        .status-succeeded { background-color: #4CAF50; color: white; }
+        .status-failed { background-color: #f44336; color: white; }
+        .status-crashed { background-color: #FF9800; color: white; }
+    </style>
+</head>
+<body>
+    <h1>Topdata Reports</h1>
+    <table class="td-report-table">
+        <thead>
+            <tr>
+                <th>Start Time</th>
+                <th>Type</th>
+                <th>Status</th>
+                <th>Command</th>
+                <th>Duration</th>
+                <th>PID</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for report in reports %}
+                <tr>
+                    <td>{{ report.startedAt|date('d.m.Y H:i') }}</td>
+                    <td>{{ report.jobType }}</td>
+                    <td>
+                        <span class="status-badge status-{{ report.jobStatus|lower }}">
+                            {{ report.jobStatus }}
+                        </span>
+                    </td>
+                    <td>{{ report.commandLine }}</td>
+                    <td>
+                        {% if report.finishedAt %}
+                            {{ report.startedAt.diff(report.finishedAt)|date('%H:%I:%S') }}
+                        {% else %}
+                            Running...
+                        {% endif %}
+                    </td>
+                    <td>{{ report.pid }}</td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="6">No reports available</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
