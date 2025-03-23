@@ -29,6 +29,7 @@ class TopdataReportApiController extends AbstractTopdataApiController
     {
         try {
             if (!$request->getSession()->get('topdata_reports_authenticated', false)) {
+                $this->addFlash('error', 'Not authenticated');
                 return $this->redirectToRoute('topdata.foundation.reports.login');
             }
 
@@ -53,6 +54,7 @@ class TopdataReportApiController extends AbstractTopdataApiController
             $password = $request->request->get('password');
             if ($this->reportService->validateReportsPassword($password)) {
                 $request->getSession()->set('topdata_reports_authenticated', true);
+
                 return $this->redirectToRoute('topdata.foundation.reports');
             }
             $this->addFlash('error', 'Invalid password');
