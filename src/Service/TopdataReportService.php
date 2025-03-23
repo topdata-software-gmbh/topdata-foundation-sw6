@@ -24,7 +24,8 @@ class TopdataReportService
     private ?string $currentReportId = null;
 
     public function __construct(
-        private readonly EntityRepository $topdataReportRepository
+        private readonly EntityRepository $topdataReportRepository,
+        private readonly TopConfigRegistry $configRegistry
     )
     {
     }
@@ -146,6 +147,18 @@ class TopdataReportService
         }, $reports->getElements()));
 
         $this->topdataReportRepository->delete($ids, Context::createDefaultContext());
+    }
+
+    public function validateReportsPassword(string $password): bool
+    {
+        $hash = $this->configRegistry->get('reportsPasswordHash');
+        return password_verify($password, $hash);
+    }
+
+    public function setReportsPassword(string $password): void
+    {
+        $hash = password_hash($password, PASSWORD_DEFAULT);
+        $this->configRegistry->set('reportsPasswordHash', $hash);
     }
 
     public function getLatestReports(int $limit = 10): EntityCollection

@@ -1,0 +1,24 @@
+{% extends '@TopdataFoundationSW6/storefront/layout/base.html.twig' %}
+
+{% block title %}Login - Topdata Reports{% endblock %}
+
+{% block content %}
+    <div class="td-card">
+        <h1>Topdata Reports Login</h1>
+
+        {% if error %}
+            <div class="alert alert-error">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
+        {% endif %}
+
+        <form method="post">
+            <input
+                    class="td-input"
+                type="password"
+                name="password"
+                placeholder="Password"
+                required
+            >
+            <button type="submit" class="btn-primary">Sign in</button>
+        </form>
+    </div>
+{% endblock %}
