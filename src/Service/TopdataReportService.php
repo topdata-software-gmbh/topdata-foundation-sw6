@@ -145,4 +145,15 @@ class TopdataReportService
 
         $this->topdataReportRepository->delete($ids, Context::createDefaultContext());
     }
+
+    public function getLatestReports(int $limit = 10): EntityCollection
+    {
+        $criteria = new Criteria();
+        $criteria->addSorting(Criteria::DESC('startedAt'));
+        $criteria->setLimit($limit);
+        
+        return $this->topdataReportRepository
+            ->search($criteria, Context::createDefaultContext())
+            ->getEntities();
+    }
 }

@@ -13,8 +13,15 @@
         <service id="Topdata\TopdataFoundationSW6\Service\CliDumpService" autowire="true"/>
         <service id="Topdata\TopdataFoundationSW6\Service\TopdataReportService" autowire="true"/>
 
+        <!-- CONTROLLERS -->
+        <service id="Topdata\TopdataFoundationSW6\Controller\TopdataReportApiController" public="true" autowire="true">
+            <call method="setContainer">
+                <argument type="service" id="service_container"/>
+            </call>
+        </service>
 
-        <!-- Import Report Entity -->
+
+        <!-- ENTITIES -->
         <service id="Topdata\TopdataFoundationSW6\Core\Content\TopdataReport\TopdataReportDefinition">
             <tag name="shopware.entity.definition" entity="topdata_report" />
         </service>
