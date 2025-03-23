@@ -44,24 +44,10 @@
         .status-succeeded { background-color: #4CAF50; color: white; }
         .status-failed { background-color: #f44336; color: white; }
         .status-crashed { background-color: #FF9800; color: white; }
-
-        .td-logout-button {
-            display: inline-block;
-            padding: 10px 15px;
-            background-color: #5085A9;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            margin-bottom: 20px;
-        }
     </style>
 
 
     <h1>Topdata Reports</h1>
-
-    {% if app.session.get('topdata_reports_authenticated') %}
-        <a href="{{ path('topdata.foundation.reports.logout') }}" class="td-logout-button">Logout</a>
-    {% endif %}
 
     <table class="td-report-table">
         <thead>
