@@ -104,7 +104,7 @@
                 </td>
                 <td>{{ report.pid }}</td>
                 <td>
-                    <a href="/topdata/report/detail/{{ report.id }}">Detailed View</a>
+                    <a href="{{ path('topdata.foundation.report.detail', {'id': report.id}) }}">Detailed View</a>
                 </td>
             </tr>
         {% else %}

@@ -39,7 +39,7 @@ class TopdataReportController extends AbstractTopdataApiController
             // ---- Check if the user is authenticated
             if (!$request->getSession()->get('topdata_reports_authenticated', false)) {
                 $this->addFlash('error', 'Not authenticated');
-                return $this->redirectToRoute('topdata.foundation.reports.login');
+                return $this->redirectToRoute('topdata.foundation.login');
             }
 
             // ---- Render the reports template with the latest reports
@@ -58,8 +58,8 @@ class TopdataReportController extends AbstractTopdataApiController
      * @return Response The HTTP response.
      */
     #[Route(
-        path: '/topdata-foundation/reports/login',
-        name: 'topdata.foundation.reports.login',
+        path: '/topdata-foundation/login',
+        name: 'topdata.foundation.login',
         defaults: ['_routeScope' => ['storefront']],
         methods: ['GET', 'POST'],
         requirements: ['_format' => 'html']
@@ -88,8 +88,8 @@ class TopdataReportController extends AbstractTopdataApiController
      * @return Response The HTTP response.
      */
     #[Route(
-        path: '/topdata-foundation/reports/logout',
-        name: 'topdata.foundation.reports.logout',
+        path: '/topdata-foundation/logout',
+        name: 'topdata.foundation.logout',
         defaults: ['_routeScope' => ['storefront']],
         methods: ['GET'],
         requirements: ['_format' => 'html']
@@ -99,7 +99,7 @@ class TopdataReportController extends AbstractTopdataApiController
         // ---- Remove the authentication flag from the session
         $request->getSession()->remove('topdata_reports_authenticated');
         $this->addFlash('success', 'You have been logged out.');
-        return $this->redirectToRoute('topdata.foundation.reports.login');
+        return $this->redirectToRoute('topdata.foundation.login');
     }
 
     /**
@@ -111,7 +111,7 @@ class TopdataReportController extends AbstractTopdataApiController
      * @throws Exception
      */
     #[Route(
-        path: '/topdata/report/detail/{id}',
+        path: '/topdata-foundation/report/{id}',
         name: 'topdata.foundation.report.detail',
         defaults: ['_routeScope' => ['storefront']],
         methods: ['GET'],
@@ -123,7 +123,7 @@ class TopdataReportController extends AbstractTopdataApiController
             // ---- Check if the user is authenticated
             if (!$request->getSession()->get('topdata_reports_authenticated', false)) {
                 $this->addFlash('error', 'Not authenticated');
-                return $this->redirectToRoute('topdata.foundation.reports.login');
+                return $this->redirectToRoute('topdata.foundation.login');
             }
 
             // ---- Retrieve the report by ID

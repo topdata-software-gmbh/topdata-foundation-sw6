@@ -14,7 +14,7 @@
         <service id="Topdata\TopdataFoundationSW6\Service\TopdataReportService" autowire="true"/>
 
         <!-- CONTROLLERS -->
-        <service id="Topdata\TopdataFoundationSW6\Controller\TopdataReportApiController" public="true" autowire="true">
+        <service id="Topdata\TopdataFoundationSW6\Controller\TopdataReportController" public="true" autowire="true">
             <call method="setContainer">
                 <argument type="service" id="service_container"/>
             </call>
