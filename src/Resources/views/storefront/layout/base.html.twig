@@ -75,7 +75,7 @@
     <div style="position: relative;">
         <div class="content-wrapper">
             {% if app.session.get('topdata_reports_authenticated') %}
-                <a href="{{ path('topdata.foundation.logout') }}" class="td-logout-button">Logout</a>
+                <a href="{{ path('topdata.foundation.auth.logout') }}" class="td-logout-button">Logout</a>
             {% endif %}
     </div>
 

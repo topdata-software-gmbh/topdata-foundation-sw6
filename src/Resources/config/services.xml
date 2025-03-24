@@ -19,6 +19,11 @@
                 <argument type="service" id="service_container"/>
             </call>
         </service>
+        <service id="Topdata\TopdataFoundationSW6\Controller\TopdataAuthController" public="true" autowire="true">
+            <call method="setContainer">
+                <argument type="service" id="service_container"/>
+            </call>
+        </service>
 
 
         <!-- ENTITIES -->
