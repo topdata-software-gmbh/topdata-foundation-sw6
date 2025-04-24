@@ -5,6 +5,7 @@ namespace Topdata\TopdataFoundationSW6\Controller;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
+use Topdata\TopdataFoundationSW6\Util\UtilJsonResponse;
 
 /**
  * Provides common response methods for API controllers.
@@ -38,13 +39,7 @@ abstract class AbstractTopdataApiController extends AbstractController
      */
     protected function successResponse(?string $message = null, mixed $payload = null): JsonResponse
     {
-        $body = [
-            'success' => true,
-            'message' => $message,
-            'payload' => $payload,
-        ];
-
-        return new JsonResponse($body, Response::HTTP_OK);
+        return UtilJsonResponse::success($message, $payload);
     }
 
     /**
@@ -57,12 +52,6 @@ abstract class AbstractTopdataApiController extends AbstractController
      */
     protected function errorResponse(?string $errorMessage = null, int $httpCode = Response::HTTP_INTERNAL_SERVER_ERROR, mixed $payload = null): JsonResponse
     {
-        $body = [
-            'success' => false,
-            'message' => $errorMessage,
-            'payload' => $payload,
-        ];
-
-        return new JsonResponse($body, $httpCode);
+        return UtilJsonResponse::error($errorMessage, $httpCode, $payload);
     }
 }
