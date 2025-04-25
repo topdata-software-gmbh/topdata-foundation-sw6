@@ -28,4 +28,13 @@ class UtilJsonResponse
             'payload' => $payload
         ]);
     }
+
+    public static function payload(mixed $payload, ?string $message = null): JsonResponse
+    {
+        return new JsonResponse([
+            'success' => true,
+            'message' => $message,
+            'payload' => $payload
+        ]);
+    }
 }
