@@ -10,9 +10,9 @@ use Symfony\Component\Console\Output\NullOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\ErrorHandler\ErrorHandler;
 use Topdata\TopdataFoundationSW6\Helper\CliStyle;
+use Topdata\TopdataFoundationSW6\Util\CliLogger;
 use Topdata\TopdataFoundationSW6\Util\UtilDict;
 use Topdata\TopdataFoundationSW6\Util\UtilFormatter;
-use TopdataSoftwareGmbH\Util\UtilDebug;
 
 /**
  * base command class with useful stuff for all commands.
@@ -75,6 +75,9 @@ abstract class AbstractTopdataCommand extends Command
         if ($input->hasOption('quiet') && (true === $input->getOption('quiet'))) {
             $output = new NullOutput();
         }
+
+        $this->cliStyle = new CliStyle($input, $output);
+        CliLogger::setCliStyle($this->cliStyle);
 
         // ---- print current date name + description
         $now = (new \DateTime('now', new \DateTimeZone('Europe/Berlin')))->format('Y-m-d H:i');

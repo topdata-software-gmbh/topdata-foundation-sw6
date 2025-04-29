@@ -4,6 +4,7 @@ namespace Topdata\TopdataFoundationSW6\Util;
 
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\ConsoleOutput;
+use Symfony\Component\Console\Output\OutputInterface;
 use Topdata\TopdataFoundationSW6\Core\Content\TopdataReport\TopdataReportEntity;
 use Topdata\TopdataFoundationSW6\Helper\CliStyle;
 
@@ -14,7 +15,7 @@ use Topdata\TopdataFoundationSW6\Helper\CliStyle;
  */
 class CliLogger
 {
-    private static CliStyle $_cliStyle;
+    private static ?CliStyle $_cliStyle = null;
     /**
      * see self::lap()
      */
@@ -64,10 +65,16 @@ class CliLogger
     }
 
 
+    public static function setCliStyle(CliStyle $cliStyle): void
+    {
+        self::$_cliStyle = $cliStyle;
+    }
+
     public static function getCliStyle(): CliStyle
     {
-        if (!isset(self::$_cliStyle)) {
-            self::$_cliStyle = new CliStyle(new ArrayInput([]), new ConsoleOutput());
+        if (self::$_cliStyle === null) {
+            // Throw exception as the style should have been set by the command
+            throw new \LogicException('CliStyle has not been set in CliLogger. Please call CliLogger::setCliStyle() first, typically in your command\'s initialize method.');
         }
 
         return self::$_cliStyle;
@@ -81,7 +88,6 @@ class CliLogger
     {
         self::getCliStyle()->dumpDict($report->getReportData());
     }
-
 
 
     /**
@@ -121,36 +127,24 @@ class CliLogger
     {
         $percentFormatted = round($current / $total * 100, 1) . '%';
         $currentFormatted = number_format($current, 0, ',', '.');
-        $totalFormatted   = number_format($total, 0, ',', '.');
+        $totalFormatted = number_format($total, 0, ',', '.');
         self::writeln("$currentFormatted / $totalFormatted - $percentFormatted");
     }
 
 
-
-
-
     public static function debug(string $msg): void
     {
-        self::getCliStyle()->writeln("[debug]\t<gray>$msg</gray>");
+        if (self::getCliStyle()->getVerbosity() < OutputInterface::VERBOSITY_DEBUG) {
+            return;
+        }
 
-        // gray text
-        // self::writeln("[D]\t\033[30m" . $msg . "\033[0m");
+        self::getCliStyle()->writeln("[debug]\t<gray>$msg</gray>");
     }
 
     public static function section(string $msg): void
     {
-        // v1:
-        // self::writeln('');
-        // self::writeln("---- $msg ----");
-        // self::writeln('');
-        // v2:
-//        self::getCliStyle()->write("\n\n" . str_repeat('=', strlen($msg)) . "\n");
-//        self::getCliStyle()->write($msg . "\n");
-//        self::getCliStyle()->write(str_repeat('=', strlen($msg)) . "\n\n");
-        // v3:
         self::getCliStyle()->section($msg);
     }
-
 
 
     public static function title(string $msg): void
@@ -165,7 +159,7 @@ class CliLogger
     public static function dump()
     {
         // only if we are in cli mode
-        if(self::isCLi()) {
+        if (self::isCLi()) {
             dump(...func_get_args());
         }
     }
@@ -192,13 +186,45 @@ class CliLogger
     }
 
     /**
-     * 03/2025 extracted from ProgressLoggingService
+     * Get caller information for logging
+     *
+     * @return string Formatted caller information with file and line number
+     *
+     * 04/2025 extracted from activity()
      */
-    private static function _getCaller()
+    private static function getCallerInfo(int $stepsBack = 2): string
     {
-        $ddSource = debug_backtrace()[1];
+        $ddSource = debug_backtrace()[$stepsBack];
 
         return basename($ddSource['file']) . ':' . $ddSource['line'] . self::getNewline();
+    }
+
+    /**
+     * Format and align a message with caller information on the right side
+     *
+     * @param string $message The message to display
+     * @return array Returns an array with ['message' => formatted message, 'padding' => padding spaces, 'caller' => caller info]
+     *
+     * 04/2025 extracted from activity()
+     */
+    public static function formatWithCaller(string $message): array
+    {
+        // Get terminal width, default to 80 if can't determine
+        $terminalWidth = (int)(`tput cols` ?? 80);
+
+        // Get caller information from one level up in the stack
+        $caller = self::getCallerInfo();
+        $callerLength = strlen($caller);
+
+        // Calculate padding needed
+        $messageLength = strlen($message);
+        $padding = max(0, $terminalWidth - $messageLength - $callerLength);
+
+        return [
+            'message' => $message,
+            'padding' => str_repeat(' ', $padding),
+            'caller'  => $caller
+        ];
     }
 
     /**
@@ -206,22 +232,17 @@ class CliLogger
      *
      * Helper method for logging stuff to stdout with right-aligned caller information.
      */
-    public static function activity(string $str = '.', bool $newLine = false): void
+    public static function activity(string $msg = '.', bool $newLine = false): void
     {
-        // Get terminal width, default to 80 if can't determine
-        $terminalWidth = (int) (`tput cols` ?? 80);
-        // Get caller information
-        $caller = self::_getCaller();
-        $callerLength = strlen($caller);
-
-        // Calculate padding needed
-        $messageLength = strlen($str);
-        $padding = max(0, $terminalWidth - $messageLength - $callerLength);
-
-        // Write the message, padding, and caller
-        CliLogger::getCliStyle()->write($str);
-        CliLogger::getCliStyle()->write(str_repeat(' ', $padding));
-        CliLogger::getCliStyle()->write($caller, $newLine);
+        if(self::getCliStyle()->getVerbosity() < OutputInterface::VERBOSITY_DEBUG) {
+            CliLogger::getCliStyle()->write($msg, $newLine);
+        } else {
+            // Write the message with padding and called
+            $formatted = self::formatWithCaller($msg);
+            CliLogger::getCliStyle()->write($formatted['message']);
+            CliLogger::getCliStyle()->write($formatted['padding']);
+            CliLogger::getCliStyle()->write($formatted['caller'], $newLine);
+        }
     }
 
     /**
@@ -235,7 +256,7 @@ class CliLogger
     /**
      * 03/2025 extracted from ProgressLoggingService
      */
-    public static  function lap($start = false): string
+    public static function lap($start = false): string
     {
         if ($start) {
             self::$microtime = microtime(true);
@@ -252,6 +273,4 @@ class CliLogger
     {
         self::getCliStyle()->writeln('✨ 🌟 ✨ DONE ✨ 🌟 ✨');
     }
-
-
 }
