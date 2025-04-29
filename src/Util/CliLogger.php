@@ -122,9 +122,15 @@ class CliLogger
      * print the progress of a task
      *
      * 01/2025 created
+     * TODO: use console's progress bar:
+     *       use $label as identifier in self::$mapProgressBars... if 100%, remove the progressBar instance from self::$mapProgressBars to save memory
      */
-    public static function progress(int $current, int $total): void
+    public static function progress(int $current, int $total, ?string $label = null): void
     {
+        if($label) {
+            self::write($label . ' ');
+        }
+
         $percentFormatted = round($current / $total * 100, 1) . '%';
         $currentFormatted = number_format($current, 0, ',', '.');
         $totalFormatted = number_format($total, 0, ',', '.');
@@ -267,6 +273,14 @@ class CliLogger
         self::$microtime = microtime(true);
 
         return (string)round($lapTime, 3);
+    }
+
+    /**
+     * 04/2025 created
+     */
+    private static function write(string $msg, bool $bNewLine = false): void
+    {
+        self::getCliStyle()->write($msg, $bNewLine);
     }
 
     public function done(): void
