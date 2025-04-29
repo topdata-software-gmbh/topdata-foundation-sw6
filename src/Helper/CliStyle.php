@@ -429,7 +429,7 @@ class CliStyle extends SymfonyStyle
      * @param string $confirmationString
      * @param string $info
      */
-    public function confirmSecureOrDie(string $confirmationString, string $info = null): void
+    public function confirmSecureOrDie(string $confirmationString, ?string $info = null): void
     {
         if ($info) {
             $this->writeln("<info>$info</info>");
