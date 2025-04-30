@@ -2,6 +2,9 @@
 
 namespace Topdata\TopdataFoundationSW6\Command;
 
+use DateTime;
+use DateTimeZone;
+use Override;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\TableCellStyle;
 use Symfony\Component\Console\Helper\TableSeparator;
@@ -13,6 +16,9 @@ use Topdata\TopdataFoundationSW6\Helper\CliStyle;
 use Topdata\TopdataFoundationSW6\Util\CliLogger;
 use Topdata\TopdataFoundationSW6\Util\UtilDict;
 use Topdata\TopdataFoundationSW6\Util\UtilFormatter;
+use Twig\Util\DeprecationCollector;
+use const E_DEPRECATED;
+use const E_USER_DEPRECATED;
 
 /**
  * base command class with useful stuff for all commands.
@@ -26,8 +32,17 @@ abstract class AbstractTopdataCommand extends Command
 
     private static function _fixNonScalar(float|int|bool|array|string|null $val)
     {
-        if(is_scalar($val)) {
+        dump($val);
+        if (is_bool($val)) {
+            return $val ? '🟢' : '🔴';
+        }
+
+        if (is_scalar($val)) {
             return $val;
+        }
+
+        if (is_array($val)) { // fixme? remove and just use json_encode?
+            return implode(', ', $val);
         }
 
         return json_encode($val, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
@@ -53,19 +68,11 @@ abstract class AbstractTopdataCommand extends Command
             'profile',
         ];
         $options = UtilDict::omit($input->getOptions(), $ignoreList);
-        foreach ($options as $key => $val) {
-            if (is_bool($val)) {
-                $options[$key] = $val ? 'true' : 'false';
-            }
-            if (is_array($val)) {
-                $options[$key] = implode(', ', $val);
-            }
-        }
 
         return $options;
     }
 
-    #[\Override]
+    #[Override]
     protected function initialize(InputInterface $input, OutputInterface $output): void
     {
         parent::initialize($input, $output);
@@ -80,16 +87,16 @@ abstract class AbstractTopdataCommand extends Command
         CliLogger::setCliStyle($this->cliStyle);
 
         // ---- print current date name + description
-        $now = (new \DateTime('now', new \DateTimeZone('Europe/Berlin')))->format('Y-m-d H:i');
-        \Topdata\TopdataFoundationSW6\Util\CliLogger::title($now . ' - ' . $this->getName() . ' - ' . $this->getDescription());
+        $now = (new DateTime('now', new DateTimeZone('Europe/Berlin')))->format('Y-m-d H:i');
+        CliLogger::title($now . ' - ' . $this->getName() . ' - ' . $this->getDescription());
 
         // ---- dump arguments and options
         self::_dumpArgsAndOptions($input);
 
         // ---- disable deprecation logs
         ErrorHandler::register(null, false)->setLoggers([
-            \E_DEPRECATED      => [null],
-            \E_USER_DEPRECATED => [null],
+            E_DEPRECATED      => [null],
+            E_USER_DEPRECATED => [null],
         ]);
 
         // ---- reduce doctrine memory leakage (not really)
@@ -110,12 +117,12 @@ abstract class AbstractTopdataCommand extends Command
         $options = $this->_getFilteredCommandLineArgs($input);
 
         if (empty($arguments) && empty($options)) {
-            \Topdata\TopdataFoundationSW6\Util\CliLogger::writeln('<gray>No arguments or options found.</gray>');
+            CliLogger::writeln('<gray>No arguments or options found.</gray>');
             return;
         }
 
         // ---- build table
-        $tbl = \Topdata\TopdataFoundationSW6\Util\CliLogger::getCliStyle()->createTable();
+        $tbl = CliLogger::getCliStyle()->createTable();
         $tbl->setHorizontal(false);
         $tbl->setHeaderTitle('Args and Opts');
         $tbl->setHeaders(['Key', 'Value']);
@@ -139,7 +146,7 @@ abstract class AbstractTopdataCommand extends Command
         $tbl->setRows($rows);
 
         $tbl->render();
-        \Topdata\TopdataFoundationSW6\Util\CliLogger::getCliStyle()->newLine();
+        CliLogger::getCliStyle()->newLine();
     }
 
     /**
@@ -149,6 +156,6 @@ abstract class AbstractTopdataCommand extends Command
      */
     protected function done()
     {
-        \Topdata\TopdataFoundationSW6\Util\CliLogger::getCliStyle()->done('DONE ' . $this->getName() . ' [' . UtilFormatter::formatBytes(memory_get_peak_usage(true)) . ' / ' . UtilFormatter::formatDuration(microtime(true) - $this->_startTime, 2) . ']');
+        CliLogger::getCliStyle()->done('DONE ' . $this->getName() . ' [' . UtilFormatter::formatBytes(memory_get_peak_usage(true)) . ' / ' . UtilFormatter::formatDuration(microtime(true) - $this->_startTime, 2) . ']');
     }
 }
