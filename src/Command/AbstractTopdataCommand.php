@@ -32,7 +32,6 @@ abstract class AbstractTopdataCommand extends Command
 
     private static function _fixNonScalar(float|int|bool|array|string|null $val)
     {
-        dump($val);
         if (is_bool($val)) {
             return $val ? '🟢' : '🔴';
         }
