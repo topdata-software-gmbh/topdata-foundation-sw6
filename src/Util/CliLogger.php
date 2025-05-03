@@ -256,7 +256,7 @@ class CliLogger
      */
     public static function mem(): void
     {
-        self::activity('[' . round(memory_get_usage(true) / 1024 / 1024) . 'Mb]');
+        self::writeln('[' . round(memory_get_usage(true) / 1024 / 1024) . 'Mb]');
     }
 
     /**
@@ -278,7 +278,7 @@ class CliLogger
     /**
      * 04/2025 created
      */
-    private static function write(string $msg, bool $bNewLine = false): void
+    public static function write(string $msg, bool $bNewLine = false): void
     {
         self::getCliStyle()->write($msg, $bNewLine);
     }
