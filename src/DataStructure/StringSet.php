@@ -1,6 +1,6 @@
 <?php
 
-namespace Topdata\TopdataFoundationSW6\Helper;
+namespace Topdata\TopdataFoundationSW6\DataStructure;
 
 
 /**
