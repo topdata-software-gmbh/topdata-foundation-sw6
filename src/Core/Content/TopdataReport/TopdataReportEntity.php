@@ -18,7 +18,7 @@ class TopdataReportEntity extends Entity
     protected ?int $pid = null;
     protected \DateTimeInterface $startedAt;
     protected ?\DateTimeInterface $finishedAt = null;
-    protected array $reportData;
+    protected array $reportData = [];
 
     public function getCommandLine(): string
     {

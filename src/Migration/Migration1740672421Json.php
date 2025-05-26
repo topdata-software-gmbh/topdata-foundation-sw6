@@ -24,7 +24,7 @@ class Migration1740672421Json extends MigrationStep
         // Then, update the column to be JSON
         $connection->executeStatement("
             ALTER TABLE `topdata_report`
-            MODIFY COLUMN `report_data` JSON NOT NULL DEFAULT '{}';
+            MODIFY COLUMN `report_data` JSON NOT NULL;
         ");
     }
 
