@@ -4,6 +4,7 @@ namespace Topdata\TopdataFoundationSW6\Util;
 
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\ConsoleOutput;
+use Symfony\Component\Console\Output\NullOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 use Topdata\TopdataFoundationSW6\Core\Content\TopdataReport\TopdataReportEntity;
 use Topdata\TopdataFoundationSW6\Helper\CliStyle;
@@ -70,11 +71,18 @@ class CliLogger
         self::$_cliStyle = $cliStyle;
     }
 
+
+
     public static function getCliStyle(): CliStyle
     {
         if (self::$_cliStyle === null) {
-            // Throw exception as the style should have been set by the command
-            throw new \LogicException('CliStyle has not been set in CliLogger. Please call CliLogger::setCliStyle() first, typically in your command\'s initialize method.');
+
+            if (php_sapi_name() === 'cli') {
+                // Throw exception as the style should have been set by the command
+                throw new \LogicException('CliStyle has not been set in CliLogger. Please call CliLogger::setCliStyle() first, typically in your command\'s initialize method.');
+            }
+
+            self::$_cliStyle = new CliStyle(new ArrayInput([]), new NullOutput());
         }
 
         return self::$_cliStyle;
