@@ -8,7 +8,6 @@ use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\Plugin\PluginService;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Topdata\TopdataFoundationSW6\Util\UtilPlugin;
-use TopdataSoftwareGmbH\Util\UtilDebug;
 
 /**
  * Service for handling plugin-related operations

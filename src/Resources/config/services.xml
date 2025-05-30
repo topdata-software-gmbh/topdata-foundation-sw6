@@ -12,6 +12,7 @@
         <service id="Topdata\TopdataFoundationSW6\Service\PluginHelperService" autowire="true"/>
         <service id="Topdata\TopdataFoundationSW6\Service\CliDumpService" autowire="true"/>
         <service id="Topdata\TopdataFoundationSW6\Service\TopdataReportService" autowire="true"/>
+        <service id="Topdata\TopdataFoundationSW6\Service\SalesChannelSelectionService" autowire="true"/>
 
         <!-- CONTROLLERS -->
         <service id="Topdata\TopdataFoundationSW6\Controller\TopdataReportController" public="true" autowire="true">
