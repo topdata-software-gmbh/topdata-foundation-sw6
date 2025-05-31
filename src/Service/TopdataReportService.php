@@ -111,7 +111,7 @@ class TopdataReportService
             if (!UtilCli::isProcessActive($job->getPid())) {
                 $this->_markJobAsCrashed($job);
                 $crashedCount++;
-                CliLogger::notice("Marked job #{$job->getId()} [{$job->getCommandLine()}] with PID {$job->getPid()} as crashed");
+                CliLogger::note("Marked job #{$job->getId()} [{$job->getCommandLine()}] with PID {$job->getPid()} as crashed");
             }
         }
         return $crashedCount;

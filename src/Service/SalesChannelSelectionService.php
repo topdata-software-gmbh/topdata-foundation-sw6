@@ -8,6 +8,7 @@ use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\System\SalesChannel\Context\CachedSalesChannelContextFactory;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
+use Shopware\Core\System\SalesChannel\SalesChannelEntity;
 use Topdata\TopdataFoundationSW6\Util\CliLogger;
 
 /**
@@ -25,11 +26,9 @@ class SalesChannelSelectionService
 
     public function askForSalesChannelId(): string
     {
-        // Get available sales channels
+        // ---- Fetch available sales channels
         $criteria = new Criteria();
         $criteria->addAssociation('domains');
-
-
         $salesChannels = $this->salesChannelRepository->search($criteria, Context::createDefaultContext());
 
         $choices = [];
@@ -69,6 +68,13 @@ class SalesChannelSelectionService
         );
 
         return $salesChannelContext;
+    }
+
+    public function askForSalesChannel(): SalesChannelEntity
+    {
+        $id = $this->askForSalesChannelId();
+
+        return $this->salesChannelRepository->search(new Criteria([$id]), Context::createDefaultContext())->first();
     }
 
 }

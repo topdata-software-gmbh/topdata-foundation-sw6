@@ -35,7 +35,7 @@ class CliLogger
     }
 
 
-    public static function notice(string $msg): void
+    public static function note(string $msg): void
     {
         // self::getCliStyle()->writeln("[notice]\t<blue>$msg</blue>");
 
@@ -291,8 +291,14 @@ class CliLogger
         self::getCliStyle()->write($msg, $bNewLine);
     }
 
+    public static function newLine(int $count = 1): void
+    {
+        self::getCliStyle()->newLine($count);
+    }
+
     public function done(): void
     {
         self::getCliStyle()->writeln('✨ 🌟 ✨ DONE ✨ 🌟 ✨');
     }
+
 }

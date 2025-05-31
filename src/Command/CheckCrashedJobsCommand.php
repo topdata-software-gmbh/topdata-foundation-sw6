@@ -47,7 +47,7 @@ class CheckCrashedJobsCommand extends AbstractTopdataCommand
             
             if ($deletedCount > 0) {
                 $this->topdataReportService->deleteReports($noPidReports);
-                CliLogger::notice("Deleted $deletedCount reports with no PID");
+                CliLogger::note("Deleted $deletedCount reports with no PID");
             }
         }
 

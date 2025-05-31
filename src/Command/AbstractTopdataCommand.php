@@ -145,7 +145,7 @@ abstract class AbstractTopdataCommand extends Command
         $tbl->setRows($rows);
 
         $tbl->render();
-        CliLogger::getCliStyle()->newLine();
+        CliLogger::newLine();
     }
 
     /**
