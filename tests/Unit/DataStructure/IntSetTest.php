@@ -2,6 +2,7 @@
 
 namespace Topdata\TopdataFoundationSW6\Tests\Unit\DataStructure;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
 use Topdata\TopdataFoundationSW6\DataStructure\IntSet;

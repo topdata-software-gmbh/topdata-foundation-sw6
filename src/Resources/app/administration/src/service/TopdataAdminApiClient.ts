@@ -1,24 +1,25 @@
-// TopdataAdminApiClient.ts - Custom API client service for interacting with Shopware's API
-// 2024-11-06 created
-// This TypeScript class extends the ApiService to provide simplified GET, POST, PUT, and DELETE requests
-// for a Shopware-based API. It includes custom headers and uses a base path for API calls.
-//
-// example use:
-//
-// const client = Shopware.Service().get('TopdataAdminApiClient')
-//
-// or you can inject the service in your vue component:
-// {
-//     inject: ['TopdataAdminApiClient'],
-//     methods: {
-//         onClick() {
-//             this.TopdataAdminApiClient.get('/api/topdata/test').then((response) => {
-//                 console.log(response);
-//             });
-//         }
-//     }
-// }
-
+/**
+ * TopdataAdminApiClient.ts - Custom API client service for interacting with Shopware's API
+ * 2024-11-06 created
+ * This TypeScript class extends the ApiService to provide simplified GET, POST, PUT, and DELETE requests
+ * for a Shopware-based API. It includes custom headers and uses a base path for API calls.
+ *
+ * example use:
+ *
+ * const client = Shopware.Service().get('TopdataAdminApiClient')
+ *
+ * or you can inject the service in your vue component:
+ * {
+ *     inject: ['TopdataAdminApiClient'],
+ *     methods: {
+ *         onClick() {
+ *             this.TopdataAdminApiClient.get('/api/topdata/test').then((response) => {
+ *                 console.log(response);
+ *             });
+ *         }
+ *     }
+ * }
+ */
 
 /**
  * Fix for "TS2304: Cannot find name Shopware"
@@ -53,9 +54,11 @@ class TopdataAdminApiClient extends ApiService {
             }
         ).then((response: any) => {
             Shopware.State.dispatch('notification/createNotification', {
-                variant: 'success',
-                title:   'Success',
-                message: 'GET request successful'
+                title: 'Success',
+                message: 'GET request successful',
+                type: 'success',
+                // Add these properties for Pinia compatibility
+                system: true
             });
             return ApiService.handleResponse(response);
         });
