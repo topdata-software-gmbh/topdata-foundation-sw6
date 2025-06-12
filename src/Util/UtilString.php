@@ -255,6 +255,7 @@ class UtilString
     }
 
     /**
+     * TODO: remove this
      * 07/2020 created (tldr2anki)
      * 09/2020 used by cloudlister.
      *
@@ -272,6 +273,7 @@ class UtilString
     }
 
     /**
+     * TODO: remove this
      * 07/2020 created (tldr2anki).
      *
      * @param  string       $str
@@ -287,79 +289,9 @@ class UtilString
         return $str;
     }
 
-    /**
-     * 07/2020 created (tldr2anki).
-     *
-     * @param  string       $str
-     * @param  string       $beginning
-     * @param  string       $end
-     * @return false|string
-     */
-    public static function removeFromBeginningAndEnd(string $str, string $beginning, string $end)
+    public static function max255(string $str): string
     {
-        $str = self::removeFromBeginning($str, $beginning);
-        $str = self::removeFromEnd($str, $end);
-
-        return $str;
+        return trim(substr(trim($str), 0, 255));
     }
 
-    /**
-     * 01/2019
-     * 06/2020 parameters $left and $right added.
-     *
-     * needs nicmart/string-template
-     * composer require nicmart/string-template
-     *
-     * example: UtilString::tpl("My name is {name} {surname}", ['name' => 'Nicolò', 'surname' => 'Martini']);
-     *
-     * @param  string       $template
-     * @param  array        $replacements
-     * @param  string       $left
-     * @param  string       $right
-     * @return mixed|string
-     */
-    public static function tpl(string $template, array $replacements, string $left = '{', string $right = '}')
-    {
-        $engine = new \StringTemplate\Engine($left, $right);
-
-        return $engine->render($template, $replacements);
-    }
-
-    /**
-     * 03/2021 created.
-     *
-     * composer require mustache/mustache
-     *
-     * @param  string $tpl
-     * @param  array  $replacements
-     * @return string
-     */
-    public static function mustache(string $tpl, array $replacements)
-    {
-        return (new \Mustache_Engine(['entity_flags' => ENT_QUOTES]))->render($tpl, $replacements);
-    }
-
-    /**
-     * 08/2020 created
-     * used in webpack migrator.
-     *
-     * @param  string $search
-     * @param  string $replace
-     * @param  string $subject
-     * @param  bool   $bForce  if TRUE an AssertionError is thrown if nothing could be replaced
-     * @return string
-     */
-    public static function replaceLast(string $search, string $replace, string $subject, bool $bForce = false)
-    {
-        $pos = strrpos($subject, $search);
-        if ($pos !== false) {
-            return substr_replace($subject, $replace, $pos, strlen($search));
-        }
-
-        if ($bForce) {
-            throw new \AssertionError();
-        }
-
-        return $subject;
-    }
 }
