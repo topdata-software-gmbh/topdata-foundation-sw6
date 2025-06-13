@@ -157,7 +157,7 @@ class CliLogger
 
     public static function section(string $msg): void
     {
-        self::getCliStyle()->section($msg);
+        self::getCliStyle()->section("\n\n" . $msg);
     }
 
 
