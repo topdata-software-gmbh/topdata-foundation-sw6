@@ -255,7 +255,7 @@ class CliLogger
             $formatted = self::formatWithCaller($msg);
             CliLogger::getCliStyle()->write($formatted['message']);
             CliLogger::getCliStyle()->write($formatted['padding']);
-            CliLogger::getCliStyle()->write($formatted['caller'], $newLine);
+            CliLogger::getCliStyle()->write($formatted['caller']);
         }
     }
 
