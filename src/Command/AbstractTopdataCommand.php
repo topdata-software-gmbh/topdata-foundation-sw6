@@ -21,7 +21,8 @@ use const E_DEPRECATED;
 use const E_USER_DEPRECATED;
 
 /**
- * base command class with useful stuff for all commands.
+ * Base command class with useful stuff for all commands.
+ * Provides common functionalities like CLI styling, logging, and argument parsing.
  *
  * 04/2024 created
  */
@@ -30,12 +31,19 @@ abstract class AbstractTopdataCommand extends Command
     protected CliStyle $cliStyle;
     private float $_startTime; // in seconds, used for profiling
 
+    /**
+     * Fixes non-scalar values for display purposes.
+     * Converts booleans to unicode symbols, arrays to comma-separated strings, and other non-scalar values to JSON.
+     *
+     * @param float|int|bool|array|string|null $val The value to fix.
+     * @return float|int|string The fixed value.
+     */
     private static function _fixNonScalar(float|int|bool|array|string|null $val)
     {
         if (is_bool($val)) {
             // return $val ? '🟢' : '🔴';
 //            return $val ? '●' : '○';
-            return $val ? '⬤' : '◯';
+            return $val ? '🟢' : '◯';
         }
 
         if (is_scalar($val)) {
@@ -50,10 +58,12 @@ abstract class AbstractTopdataCommand extends Command
     }
 
     /**
+     * Gets filtered command line arguments, excluding common options like help, verbose, etc.
+     *
      * 07/2023 created.
      *
-     * @param InputInterface $input
-     * @return array dict
+     * @param InputInterface $input The input interface.
+     * @return array An array of filtered command line arguments.
      */
     protected static function _getFilteredCommandLineArgs(InputInterface $input): array
     {
@@ -73,6 +83,13 @@ abstract class AbstractTopdataCommand extends Command
         return $options;
     }
 
+    /**
+     * Initializes the command.
+     * Sets up CLI styling, logging, and disables deprecation logs.
+     *
+     * @param InputInterface $input The input interface.
+     * @param OutputInterface $output The output interface.
+     */
     #[Override]
     protected function initialize(InputInterface $input, OutputInterface $output): void
     {
@@ -109,7 +126,11 @@ abstract class AbstractTopdataCommand extends Command
     }
 
     /**
+     * Dumps arguments and options to the CLI.
+     *
      * 11/2024 created
+     *
+     * @param InputInterface $input The input interface.
      */
     private function _dumpArgsAndOptions(InputInterface $input): void
     {
@@ -151,9 +172,9 @@ abstract class AbstractTopdataCommand extends Command
     }
 
     /**
-     * 01/2023 created.
+     * Prints a "DONE" message to the CLI with memory and duration information.
      *
-     * prints FAIL error and exits
+     * 01/2023 created.
      */
     protected function done()
     {
