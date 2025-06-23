@@ -175,7 +175,7 @@ class CliLogger
      */
     public static function progress(int $current, int $total, ?string $label = null): void
     {
-        if($label) {
+        if ($label) {
             self::write($label . ' ');
         }
 
@@ -186,6 +186,11 @@ class CliLogger
     }
 
 
+
+    private static function _formatDuration(int $seconds): string
+    {
+        return gmdate($seconds >= 3600 ? 'H:i:s' : 'i:s', $seconds);
+    }
 
     /**
      * Create or update a progress bar using Symfony's ProgressBar component
@@ -202,8 +207,23 @@ class CliLogger
         // ---- Create progress bar if it doesn't exist
         if (!isset(self::$progressBars[$label])) {
             $progressBar = new ProgressBar(self::getCliStyle(), $total);
-            $progressBar->setFormat('%current%/%max% [%bar%] %percent:3s%% %elapsed:6s%/%estimated:-6s% %memory:6s%' . ($message ? ' %message%' : ''));
+            // $progressBar->setFormat('%current%/%max% [%bar%] %percent:3s%% %elapsed:6s%/%estimated:-6s% [%memory:6s%]' . ($message ? ' %message%' : ''));
+            // $progressBar->setFormat('%current%/%max% [%bar%] %percent:3s%% - %elapsed:6s% [%memory:6s%]' . ($message ? ' %message%' : ''));
+            // $progressBar->setFormat('%current%/%max% [%bar%] %percent:3s%% Time: %elapsed:6s% / ETA: %estimated:8s% [%memory:6s%]');
+            $progressBar->setFormat('%current%/%max% [%bar%] %percent:3s%% %elapsed_estimated% [%memory:6s%]' . ($message ? ' %message%' : ''));
 
+
+            // ----
+            ProgressBar::setPlaceholderFormatterDefinition('elapsed_estimated', function (ProgressBar $bar) {
+                $elapsed = time() - $bar->getStartTime(); // in seconds
+                $estimated = $bar->getEstimated();        // also seconds
+
+                return sprintf(
+                    '%s / %s',
+                    self::_formatDuration($elapsed),
+                    $estimated !== null ? self::_formatDuration($estimated) : '--'
+                );
+            });
             if ($message) {
                 $progressBar->setMessage($message);
             }
@@ -381,14 +401,16 @@ class CliLogger
      */
     public static function activity(string $msg = '.', bool $newLine = false): void
     {
-        if(self::getCliStyle()->getVerbosity() < OutputInterface::VERBOSITY_DEBUG) {
-            CliLogger::getCliStyle()->write($msg, $newLine);
-        } else {
+        if (self::getCliStyle()->getVerbosity() >= OutputInterface::VERBOSITY_DEBUG) {
             // ---- Write the message with padding and called
             $formatted = self::formatWithCaller($msg);
             CliLogger::getCliStyle()->write($formatted['message']);
             CliLogger::getCliStyle()->write($formatted['padding']);
             CliLogger::getCliStyle()->write($formatted['caller']);
+        } else if (self::getCliStyle()->getVerbosity() >= OutputInterface::VERBOSITY_VERY_VERBOSE) {
+            CliLogger::getCliStyle()->write($msg, $newLine);
+        } else {
+            // no output...
         }
     }
 
@@ -396,10 +418,11 @@ class CliLogger
      * Prints memory usage to stdout.
      *
      * 03/2025 extracted from ProgressLoggingService
+     * 06/2025 disabled as the progress bar has now a memory usage indicator
      */
     public static function mem(): void
     {
-        self::writeln('[' . round(memory_get_usage(true) / 1024 / 1024) . 'Mb]');
+//        self::writeln('[' . round(memory_get_usage(true) / 1024 / 1024) . 'Mb]');
     }
 
     /**
