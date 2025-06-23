@@ -2,6 +2,7 @@
 
 namespace Topdata\TopdataFoundationSW6\Util;
 
+use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Output\NullOutput;
@@ -10,21 +11,32 @@ use Topdata\TopdataFoundationSW6\Core\Content\TopdataReport\TopdataReportEntity;
 use Topdata\TopdataFoundationSW6\Helper\CliStyle;
 
 /**
- * static class for logging .. basically a facade for the CliStyle class
+ * CliLogger is a static class providing a facade for the CliStyle class,
+ * offering convenient methods for logging messages to the console with different styles and functionalities.
  *
  * 03/2025 created
  */
 class CliLogger
 {
+    const DEFAULT_TERMINAL_WIDTH = 80;
+
+
     private static ?CliStyle $_cliStyle = null;
     /**
+     * @var float Stores the microtime for lap time measurement.
      * see self::lap()
      */
     private static float $microtime;
 
+    /**
+     * Progress bars storage by label
+     * @var ProgressBar[]
+     */
+    private static array $progressBars = [];
+
 
     /**
-     * prints to stdout
+     * Prints an info message to stdout.
      *
      * 06/2024 created
      */
@@ -35,6 +47,9 @@ class CliLogger
     }
 
 
+    /**
+     * Prints a note message to stdout.
+     */
     public static function note(string $msg): void
     {
         // self::getCliStyle()->writeln("[notice]\t<blue>$msg</blue>");
@@ -44,6 +59,9 @@ class CliLogger
 
     }
 
+    /**
+     * Prints a warning message to stdout.
+     */
     public static function warning(string $msg): void
     {
         // yellow background, black text
@@ -52,6 +70,9 @@ class CliLogger
         self::getCliStyle()->writeln("⚠️ [Warning] $msg");
     }
 
+    /**
+     * Prints an error message to stdout.
+     */
     public static function error(string $msg): void
     {
         // red background, white text
@@ -60,6 +81,9 @@ class CliLogger
         self::getCliStyle()->writeln("❌ [Error] $msg");
     }
 
+    /**
+     * Prints a success message to stdout.
+     */
     public static function success(string $msg): void
     {
         self::getCliStyle()->writeln("✅ Success: $msg\n");
@@ -72,7 +96,12 @@ class CliLogger
     }
 
 
-
+    /**
+     * Retrieves the CliStyle instance. If it's not set, it creates a new one (only if not in CLI mode).
+     *
+     * @return CliStyle The CliStyle instance.
+     * @throws \LogicException If CliStyle has not been set in CLI mode.
+     */
     public static function getCliStyle(): CliStyle
     {
         if (self::$_cliStyle === null) {
@@ -90,6 +119,8 @@ class CliLogger
 
 
     /**
+     * Dumps a TopdataReportEntity's report data to stdout.
+     *
      * 02/2025 created
      */
     public static function dumpReport(TopdataReportEntity $report): void
@@ -99,6 +130,8 @@ class CliLogger
 
 
     /**
+     * Writes a message to stdout using CliStyle.
+     *
      * 01/2025 created
      */
     public static function writeln(string $msg = ''): void
@@ -111,27 +144,34 @@ class CliLogger
         self::getCliStyle()->writeln($msg);
     }
 
+    /**
+     * Writes a red message to stdout.
+     */
     public static function red(string $msg): void
     {
         self::writeln("\033[31m" . $msg . "\033[0m");
     }
 
+    /**
+     * Writes a blue message to stdout.
+     */
     public static function blue(string $msg): void
     {
         self::writeln("\033[34m" . $msg . "\033[0m");
     }
 
-    public static function yellow(string $msg)
+    /**
+     * Writes a yellow message to stdout.
+     */
+    public static function yellow(string $msg): void
     {
         self::writeln("\033[33m" . $msg . "\033[0m");
     }
 
     /**
-     * print the progress of a task
+     * Prints the progress of a task to stdout.
      *
      * 01/2025 created
-     * TODO: use console's progress bar:
-     *       use $label as identifier in self::$mapProgressBars... if 100%, remove the progressBar instance from self::$mapProgressBars to save memory
      */
     public static function progress(int $current, int $total, ?string $label = null): void
     {
@@ -146,6 +186,87 @@ class CliLogger
     }
 
 
+
+    /**
+     * Create or update a progress bar using Symfony's ProgressBar component
+     *
+     * @param int $current Current progress value
+     * @param int $total Total expected value
+     * @param string $label Unique identifier for the progress bar
+     * @param string|null $message Optional message to display
+     *
+     * 06/2025 created
+     */
+    public static function progressBar(int $current, int $total, string $label = 'default', ?string $message = null): void
+    {
+        // ---- Create progress bar if it doesn't exist
+        if (!isset(self::$progressBars[$label])) {
+            $progressBar = new ProgressBar(self::getCliStyle(), $total);
+            $progressBar->setFormat('%current%/%max% [%bar%] %percent:3s%% %elapsed:6s%/%estimated:-6s% %memory:6s%' . ($message ? ' %message%' : ''));
+
+            if ($message) {
+                $progressBar->setMessage($message);
+            }
+
+            $progressBar->start();
+            self::$progressBars[$label] = $progressBar;
+        }
+
+        // ---- Get the progress bar
+        $progressBar = self::$progressBars[$label];
+
+        // ---- Update message if provided
+        if ($message !== null) {
+            $progressBar->setMessage($message);
+        }
+
+        // ---- Set progress to current value
+        $progressBar->setProgress($current);
+
+        // ---- If we've reached 100%, finish and clean up
+        if ($current >= $total) {
+            $progressBar->finish();
+            self::writeln(''); // Add newline after completion
+            unset(self::$progressBars[$label]); // Clean up to save memory
+        }
+    }
+
+    /**
+     * Finish and clean up a specific progress bar
+     *
+     * @param string $label Progress bar identifier
+     *
+     * 06/2025 created
+     */
+    public static function finishProgressBar(string $label = 'default'): void
+    {
+        if (isset(self::$progressBars[$label])) {
+            self::$progressBars[$label]->finish();
+            self::writeln(''); // Add newline after completion
+            unset(self::$progressBars[$label]);
+        }
+    }
+
+    /**
+     * Clean up all progress bars
+     *
+     * 06/2025 created
+     */
+    public static function clearProgressBars(): void
+    {
+        foreach (self::$progressBars as $label => $progressBar) {
+            $progressBar->finish();
+            unset(self::$progressBars[$label]);
+        }
+        if (!empty(self::$progressBars)) {
+            self::writeln(''); // Add newline if we cleaned up any bars
+        }
+    }
+
+
+    /**
+     * Prints a debug message to stdout if verbosity is high enough.
+     */
     public static function debug(string $msg): void
     {
         if (self::getCliStyle()->getVerbosity() < OutputInterface::VERBOSITY_DEBUG) {
@@ -155,12 +276,18 @@ class CliLogger
         self::getCliStyle()->writeln("[debug]\t<gray>$msg</gray>");
     }
 
+    /**
+     * Prints a section message to stdout.
+     */
     public static function section(string $msg): void
     {
         self::getCliStyle()->section("\n\n" . $msg);
     }
 
 
+    /**
+     * Prints a title message to stdout.
+     */
     public static function title(string $msg): void
     {
         self::getCliStyle()->title($msg);
@@ -168,6 +295,8 @@ class CliLogger
 
 
     /**
+     * Dumps variables to stdout if in CLI mode.
+     *
      * 03/2025 created
      */
     public static function dump()
@@ -180,6 +309,8 @@ class CliLogger
 
 
     /**
+     * Checks if the current environment is CLI.
+     *
      * 03/2025 extracted from ProgressLoggingService
      */
     private static function isCLi(): bool
@@ -188,6 +319,8 @@ class CliLogger
     }
 
     /**
+     * Gets the newline character based on the environment (CLI or web).
+     *
      * 03/2025 extracted from ProgressLoggingService
      */
     private static function getNewline(): string
@@ -202,6 +335,7 @@ class CliLogger
     /**
      * Get caller information for logging
      *
+     * @param int $stepsBack Number of steps back in the trace to get the caller info.
      * @return string Formatted caller information with file and line number
      *
      * 04/2025 extracted from activity()
@@ -223,14 +357,13 @@ class CliLogger
      */
     public static function formatWithCaller(string $message): array
     {
-        // Get terminal width, default to 80 if can't determine
-        $terminalWidth = (int)(`tput cols` ?? 80);
+        $terminalWidth = self::_getTerminalWidth();
 
-        // Get caller information from one level up in the stack
+        // ---- Get caller information from one level up in the stack
         $caller = self::getCallerInfo();
         $callerLength = strlen($caller);
 
-        // Calculate padding needed
+        // ---- Calculate padding needed
         $messageLength = strlen($message);
         $padding = max(0, $terminalWidth - $messageLength - $callerLength);
 
@@ -242,16 +375,16 @@ class CliLogger
     }
 
     /**
-     * 03/2025 extracted from ProgressLoggingService
-     *
      * Helper method for logging stuff to stdout with right-aligned caller information.
+     *
+     * 03/2025 extracted from ProgressLoggingService
      */
     public static function activity(string $msg = '.', bool $newLine = false): void
     {
         if(self::getCliStyle()->getVerbosity() < OutputInterface::VERBOSITY_DEBUG) {
             CliLogger::getCliStyle()->write($msg, $newLine);
         } else {
-            // Write the message with padding and called
+            // ---- Write the message with padding and called
             $formatted = self::formatWithCaller($msg);
             CliLogger::getCliStyle()->write($formatted['message']);
             CliLogger::getCliStyle()->write($formatted['padding']);
@@ -260,6 +393,8 @@ class CliLogger
     }
 
     /**
+     * Prints memory usage to stdout.
+     *
      * 03/2025 extracted from ProgressLoggingService
      */
     public static function mem(): void
@@ -268,6 +403,8 @@ class CliLogger
     }
 
     /**
+     * Measures and returns the time elapsed since the last call.
+     *
      * 03/2025 extracted from ProgressLoggingService
      */
     public static function lap($start = false): string
@@ -284,6 +421,8 @@ class CliLogger
     }
 
     /**
+     * Writes a message to stdout.
+     *
      * 04/2025 created
      */
     public static function write(string $msg, bool $bNewLine = false): void
@@ -291,14 +430,35 @@ class CliLogger
         self::getCliStyle()->write($msg, $bNewLine);
     }
 
+    /**
+     * Adds a specified number of new lines to stdout.
+     */
     public static function newLine(int $count = 1): void
     {
         self::getCliStyle()->newLine($count);
     }
 
-    public function done(): void
+    /**
+     * Prints a "DONE" message to stdout.
+     */
+    public static function done(): void
     {
         self::getCliStyle()->writeln('✨ 🌟 ✨ DONE ✨ 🌟 ✨');
+    }
+
+    /**
+     * Gets the terminal width.
+     */
+    public static function _getTerminalWidth(): int
+    {
+        try {
+            $cols = shell_exec('tput cols');
+            if ($cols !== null) {
+                return (int)trim($cols);
+            }
+        } catch (\Exception $e) {
+            return self::DEFAULT_TERMINAL_WIDTH; // default
+        }
     }
 
 }
