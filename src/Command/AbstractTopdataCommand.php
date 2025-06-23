@@ -34,7 +34,8 @@ abstract class AbstractTopdataCommand extends Command
     {
         if (is_bool($val)) {
             // return $val ? '🟢' : '🔴';
-            return $val ? '●' : '○';
+//            return $val ? '●' : '○';
+            return $val ? '⬤' : '◯';
         }
 
         if (is_scalar($val)) {
