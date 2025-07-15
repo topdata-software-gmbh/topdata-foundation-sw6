@@ -480,8 +480,9 @@ class CliLogger
                 return (int)trim($cols);
             }
         } catch (\Exception $e) {
-            return self::DEFAULT_TERMINAL_WIDTH; // default
         }
+
+        return self::DEFAULT_TERMINAL_WIDTH; // default
     }
 
 }
