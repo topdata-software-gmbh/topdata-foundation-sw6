@@ -9,7 +9,7 @@ use Topdata\TopdataFoundationSW6\Service\TopConfigRegistry;
 /**
  * 10/2024 created
  */
-readonly class TopConfigRegistryCompilerPass implements CompilerPassInterface
+class TopConfigRegistryCompilerPass implements CompilerPassInterface
 {
     public function __construct(
         private readonly string $shopwarePluginClass,
