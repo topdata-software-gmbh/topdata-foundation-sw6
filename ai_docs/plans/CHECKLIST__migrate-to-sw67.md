@@ -55,10 +55,10 @@
 
 *   [ ] **5.1 Deprecated Code Check:** Global codebase search for `@deprecated` Shopware core usage completed and addressed.
 *   [ ] **5.2 CLI Command Testing:**
-    *   [ ] `CheckCrashedJobsCommand` tested and verified.
+    *   [ ] `Command_CheckCrashedJobs` tested and verified.
     *   [ ] `DumpPluginConfigCommand` tested and verified.
     *   [ ] `SetPluginConfigCommand` tested and verified.
-    *   [ ] `SetReportsPasswordCommand` tested and verified.
+    *   [ ] `Command_SetReportsPassword` tested and verified.
 *   [ ] **5.3 Full Plugin Functionality Testing:** End-to-end tests for all plugin features completed.
 *   [ ] **5.4 Error Log Monitoring:** Shopware system logs and browser console checked for plugin-related errors/warnings throughout testing.
 

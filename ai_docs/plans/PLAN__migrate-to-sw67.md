@@ -151,10 +151,10 @@ This is the most significant change for this plugin.
 
 2.  **CLI Command Testing:**
     *   Affected Commands:
-        *   `CheckCrashedJobsCommand.php`
+        *   `Command_CheckCrashedJobs.php`
         *   `DumpPluginConfigCommand.php`
         *   `SetPluginConfigCommand.php`
-        *   `SetReportsPasswordCommand.php`
+        *   `Command_SetReportsPassword.php`
     *   Action: Execute each CLI command with various options and arguments in the Shopware 6.7 environment. Verify expected output and behavior.
 
 3.  **Full Plugin Functionality Testing:**
