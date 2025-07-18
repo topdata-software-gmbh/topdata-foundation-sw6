@@ -7,7 +7,7 @@ use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Output\NullOutput;
 use Symfony\Component\Console\Output\OutputInterface;
-use Topdata\TopdataFoundationSW6\Core\Content\TopdataReport\TopdataReportEntity;
+use Topdata\TopdataConnectorSW6\Core\Content\TopdataReport\TopdataReportEntity;
 use Topdata\TopdataFoundationSW6\Helper\CliStyle;
 
 /**
@@ -115,17 +115,6 @@ class CliLogger
         }
 
         return self::$_cliStyle;
-    }
-
-
-    /**
-     * Dumps a TopdataReportEntity's report data to stdout.
-     *
-     * 02/2025 created
-     */
-    public static function dumpReport(TopdataReportEntity $report): void
-    {
-        self::getCliStyle()->dumpDict($report->getReportData());
     }
 
 
