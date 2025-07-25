@@ -4,3 +4,7 @@ builds/
 .idea
 .phpunit.result.cache
 
+# Ignore all generated asset directories in plugins
+src/Resources/public/administration/assets
+src/Resources/public/storefront/assets
+.vite
