@@ -8,3 +8,4 @@ builds/
 src/Resources/public/administration/assets
 src/Resources/public/storefront/assets
 .vite
+node_modules
