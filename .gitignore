@@ -4,3 +4,6 @@ builds/
 .idea
 .phpunit.result.cache
 node_modules
+
+src/Resources/public/administration/js
+
