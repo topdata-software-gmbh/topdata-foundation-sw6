@@ -12,7 +12,7 @@ use Shopware\Core\System\SalesChannel\SalesChannelEntity;
 use Topdata\TopdataFoundationSW6\Util\CliLogger;
 
 /**
- * 05/2025 created (extracted from Command_TestFetchLinkedProducts)
+ * 05/2025 created (extracted from TopdataLinkedOemRemSW6::Command_TestFetchLinkedProducts)
  */
 class SalesChannelSelectionService
 {
