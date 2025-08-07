@@ -9,10 +9,11 @@ use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\System\SalesChannel\Context\CachedSalesChannelContextFactory;
 use Shopware\Core\System\SalesChannel\SalesChannelContext;
 use Shopware\Core\System\SalesChannel\SalesChannelEntity;
+use Symfony\Component\Console\Input\InputInterface;
 use Topdata\TopdataFoundationSW6\Util\CliLogger;
 
 /**
- * 05/2025 created (extracted from Command_TestFetchLinkedProducts)
+ * 05/2025 created (extracted from TopdataLinkedOemRemSW6::Command_TestFetchLinkedProducts)
  */
 class SalesChannelSelectionService
 {
@@ -26,9 +27,11 @@ class SalesChannelSelectionService
 
     public function askForSalesChannelId(): string
     {
-        // ---- Fetch available sales channels
+        // Get available sales channels
         $criteria = new Criteria();
+
         $criteria->addAssociation('domains');
+
         $salesChannels = $this->salesChannelRepository->search($criteria, Context::createDefaultContext());
 
         $choices = [];
@@ -57,18 +60,46 @@ class SalesChannelSelectionService
     public function askToGetSalesChannelContext(): SalesChannelContext
     {
         $salesChannelId = $this->askForSalesChannelId();
+        return $this->_createSalesChannelContext($salesChannelId);
+    }
 
-        // Create sales channel context
+    /**
+     * Tries to get the sales channel ID from the input. If it's not present, it starts the interactive selection.
+     */
+    public function getSalesChannelContext(InputInterface $input, string $optionName = 'sales-channel-id'): SalesChannelContext
+    {
+        $salesChannelId = $input->getOption($optionName);
+
+        if ($salesChannelId && is_string($salesChannelId)) {
+            CliLogger::info('Using provided sales channel ID: ' . $salesChannelId);
+            return $this->_createSalesChannelContext($salesChannelId);
+        }
+
+        CliLogger::info('No sales channel ID provided, starting interactive selection.');
+        return $this->askToGetSalesChannelContext();
+    }
+
+
+    /**
+     * Creates a SalesChannelContext for a given sales channel ID.
+     */
+    private function _createSalesChannelContext(string $salesChannelId): SalesChannelContext
+    {
         $context = new Context(new SystemSource());
-        $salesChannelContext = $this->salesChannelContextFactory->create(
+
+        $salesChannel = $this->salesChannelRepository->search(new Criteria([$salesChannelId]), $context)->get($salesChannelId);
+        if (!$salesChannel) {
+            throw new \RuntimeException(sprintf('Sales channel with ID "%s" not found.', $salesChannelId));
+        }
+
+        return $this->salesChannelContextFactory->create(
             '',  // token can be empty for admin context
             $salesChannelId,
             [],  // no specific options needed
             $context
         );
-
-        return $salesChannelContext;
     }
+
 
     public function askForSalesChannel(): SalesChannelEntity
     {
