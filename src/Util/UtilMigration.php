@@ -1,8 +1,7 @@
 <?php
 
 declare(strict_types=1);
-
-namespace Topdata\TopdataTopFinderProSW6\Util;
+namespace Topdata\TopdataFoundationSW6\Util;
 
 use Doctrine\DBAL\Connection;
 
@@ -21,8 +20,6 @@ class UtilMigration
      * example usage:
      *
      *
-     *   public function update(Connection $connection): void
-     *   {
      *       // --- Option 1: Set a single default value ---
      *       UtilMigration::ensureDefaultConfig(
      *           $connection,
@@ -31,17 +28,6 @@ class UtilMigration
      *           'belowNavigation' // The default value
      *       );
      *
-     *       // --- Option 2: Set multiple default values at once ---
-     *       UtilMigration::ensureDefaultConfigs(
-     *           $connection,
-     *           'TopdataTopFinderProSW6', // plugin's technical name
-     *           [
-     *               'finderBarPosition' => 'belowNavigation',
-     *               'anotherConfigKey'  => true,
-     *               'someOtherSetting'  => 10
-     *           ]
-     *       );
-     *   }
      *
      *
      *
@@ -80,6 +66,20 @@ class UtilMigration
 
     /**
      * Ensures that default values for multiple plugin configuration keys are set.
+     *
+     *
+     *       // --- Option 2: Set multiple default values at once ---
+     *       UtilMigration::ensureDefaultConfigs(
+     *           $connection,
+     *           'TopdataTopFinderProSW6', // plugin's technical name
+     *           [
+     *               'finderBarPosition' => 'belowNavigation',
+     *               'anotherConfigKey'  => true,
+     *               'someOtherSetting'  => 10
+     *           ]
+     *       );
+     *
+     *
      *
      * @param Connection $connection The database connection from the migration.
      * @param string $pluginName The technical name of the plugin.
