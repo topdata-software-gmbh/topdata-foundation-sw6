@@ -108,6 +108,7 @@ class CliLogger
 
             if (php_sapi_name() === 'cli') {
                 // Throw exception as the style should have been set by the command
+                // dd(array_map(fn($x) => $x['file'], debug_backtrace()));
                 throw new \LogicException('CliStyle has not been set in CliLogger. Please call CliLogger::setCliStyle() first, typically in your command\'s initialize method.');
             }
 
