@@ -169,9 +169,15 @@ class CliLogger
             self::write($label . ' ');
         }
 
-        $percentFormatted = round($current / $total * 100, 1) . '%';
+        if ($total === 0) {
+            $percentFormatted = 'N/A';
+            $totalFormatted = 'Unknown';
+        } else {
+            $percentFormatted = round($current / $total * 100, 1) . '%';
+            $totalFormatted = number_format($total, 0, ',', '.');
+        }
+        
         $currentFormatted = number_format($current, 0, ',', '.');
-        $totalFormatted = number_format($total, 0, ',', '.');
         self::writeln("$currentFormatted / $totalFormatted - $percentFormatted");
     }
 
