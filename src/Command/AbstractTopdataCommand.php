@@ -113,10 +113,9 @@ abstract class AbstractTopdataCommand extends Command
             $pluginNamespace = substr($pluginClass, 0, $lastNs);
             if (str_starts_with($commandClass, $pluginNamespace)) {
                 $pluginName = UtilPlugin::extractPluginName($pluginClass);
-                $label = $pluginHelper->getPluginLabel($pluginName);
                 $version = $pluginHelper->getPluginVersion($pluginName);
 
-                return sprintf('[%s v%s]', $label, $version);
+                return sprintf('[%s v%s]', $pluginName, $version);
             }
         }
 
