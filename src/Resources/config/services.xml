@@ -9,7 +9,7 @@
         <service id="Topdata\TopdataFoundationSW6\Service\TopConfigRegistry" autowire="true" />
         <service id="Topdata\TopdataFoundationSW6\Service\LocaleHelperService" autowire="true"/>
         <service id="Topdata\TopdataFoundationSW6\Service\ManufacturerService" autowire="true"/>
-        <service id="Topdata\TopdataFoundationSW6\Service\PluginHelperService" autowire="true"/>
+        <service id="Topdata\TopdataFoundationSW6\Service\PluginHelperService" autowire="true" public="true"/>
         <service id="Topdata\TopdataFoundationSW6\Service\CliDumpService" autowire="true"/>
         <service id="Topdata\TopdataFoundationSW6\Service\SalesChannelSelectionService" autowire="true"/>
 

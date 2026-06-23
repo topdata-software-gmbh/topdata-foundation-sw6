@@ -13,10 +13,11 @@ use Symfony\Component\Console\Output\NullOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\ErrorHandler\ErrorHandler;
 use Topdata\TopdataFoundationSW6\Helper\CliStyle;
+use Topdata\TopdataFoundationSW6\Service\PluginHelperService;
 use Topdata\TopdataFoundationSW6\Util\CliLogger;
 use Topdata\TopdataFoundationSW6\Util\UtilDict;
 use Topdata\TopdataFoundationSW6\Util\UtilFormatter;
-use Twig\Util\DeprecationCollector;
+use Topdata\TopdataFoundationSW6\Util\UtilPlugin;
 use const E_DEPRECATED;
 use const E_USER_DEPRECATED;
 
@@ -84,6 +85,45 @@ abstract class AbstractTopdataCommand extends Command
     }
 
     /**
+     * Detects which plugin this command belongs to by matching the command's namespace
+     * against active plugin namespaces, and returns a display tag like "[Label vX.Y.Z]".
+     */
+    private function _getPluginTag(): ?string
+    {
+        $kernel = $this->getApplication()?->getKernel();
+        if ($kernel === null || !method_exists($kernel, 'getContainer')) {
+            return null;
+        }
+
+        try {
+            $container = $kernel->getContainer();
+            $activePlugins = $container->getParameter('kernel.active_plugins');
+            $pluginHelper = $container->get(PluginHelperService::class);
+        } catch (\Throwable) {
+            return null;
+        }
+
+        $commandClass = static::class;
+
+        foreach ($activePlugins as $pluginClass => $pluginData) {
+            $lastNs = strrpos($pluginClass, '\\');
+            if ($lastNs === false) {
+                continue;
+            }
+            $pluginNamespace = substr($pluginClass, 0, $lastNs);
+            if (str_starts_with($commandClass, $pluginNamespace)) {
+                $pluginName = UtilPlugin::extractPluginName($pluginClass);
+                $label = $pluginHelper->getPluginLabel($pluginName);
+                $version = $pluginHelper->getPluginVersion($pluginName);
+
+                return sprintf('[%s v%s]', $label, $version);
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Initializes the command.
      * Sets up CLI styling, logging, and disables deprecation logs.
      *
@@ -106,7 +146,13 @@ abstract class AbstractTopdataCommand extends Command
 
         // ---- print current date name + description
         $now = (new DateTime('now', new DateTimeZone('Europe/Berlin')))->format('Y-m-d H:i');
-        CliLogger::title($now . ' - ' . $this->getName() . ' - ' . $this->getDescription());
+        $pluginTag = $this->_getPluginTag();
+        $title = $now . ' - ';
+        if ($pluginTag) {
+            $title .= $pluginTag . ' ';
+        }
+        $title .= $this->getName() . ' - ' . $this->getDescription();
+        CliLogger::title($title);
 
         // ---- dump arguments and options
         self::_dumpArgsAndOptions($input);

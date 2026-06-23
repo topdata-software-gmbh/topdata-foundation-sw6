@@ -39,6 +39,21 @@ class PluginHelperService
         return $pluginEntity?->getVersion() ?? 'unknown';
     }
 
+    /**
+     * 06/2026 created
+     */
+    public function getPluginLabel(string $pluginNameOrClass): string
+    {
+        if(UtilPlugin::isClassName($pluginNameOrClass)) {
+            $pluginNameOrClass = UtilPlugin::extractPluginName($pluginNameOrClass);
+        }
+
+        $pluginEntity = $this->pluginService->getPluginByName($pluginNameOrClass, Context::createDefaultContext());
+        $label = $pluginEntity?->getLabel();
+
+        return $label ?: $pluginNameOrClass;
+    }
+
 
 
     /**
