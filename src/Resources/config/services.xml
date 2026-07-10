@@ -12,8 +12,7 @@
         <service id="Topdata\TopdataFoundationSW6\Service\PluginHelperService" autowire="true" public="true"/>
         <service id="Topdata\TopdataFoundationSW6\Service\CliDumpService" autowire="true"/>
         <service id="Topdata\TopdataFoundationSW6\Service\SalesChannelSelectionService" autowire="true"/>
-
-
+        <service id="Topdata\TopdataFoundationSW6\Helper\CurlHttpClient" autowire="true" />
 
         <!-- TWIG EXTENSIONS -->
         <service id="Topdata\TopdataFoundationSW6\Twig\TopConfigTwigExtension" autowire="true">
