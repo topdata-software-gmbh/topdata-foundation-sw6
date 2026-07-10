@@ -9,6 +9,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\TableCellStyle;
 use Symfony\Component\Console\Helper\TableSeparator;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\NullOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\ErrorHandler\ErrorHandler;
@@ -31,6 +32,13 @@ abstract class AbstractTopdataCommand extends Command
 {
     protected CliStyle $cliStyle;
     private float $_startTime; // in seconds, used for profiling
+    private ?string $_topic = null;
+
+    public function __construct(?string $name = null)
+    {
+        parent::__construct($name);
+        $this->addOption('topic', 't', InputOption::VALUE_OPTIONAL, 'Topic or focus description for this run');
+    }
 
     /**
      * Fixes non-scalar values for display purposes.
@@ -156,6 +164,8 @@ abstract class AbstractTopdataCommand extends Command
         // ---- dump arguments and options
         self::_dumpArgsAndOptions($input);
 
+        $this->_topic = $input->getOption('topic');
+
         // ---- disable deprecation logs
         ErrorHandler::register(null, false)->setLoggers([
             E_DEPRECATED      => [null],
@@ -223,6 +233,7 @@ abstract class AbstractTopdataCommand extends Command
      */
     protected function done()
     {
-        CliLogger::getCliStyle()->done('DONE ' . $this->getName() . ' [' . UtilFormatter::formatBytes(memory_get_peak_usage(true)) . ' / ' . UtilFormatter::formatDuration(microtime(true) - $this->_startTime, 2) . ']');
+        $topicPart = $this->_topic ? ' topic: ' . $this->_topic : '';
+        CliLogger::getCliStyle()->done('DONE ' . $this->getName() . $topicPart . ' [' . UtilFormatter::formatBytes(memory_get_peak_usage(true)) . ' / ' . UtilFormatter::formatDuration(microtime(true) - $this->_startTime, 2) . ']');
     }
 }
