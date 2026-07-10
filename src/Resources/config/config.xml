@@ -2,6 +2,14 @@
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/shopware/platform/trunk/src/Core/System/SystemConfig/Schema/config.xsd">
     <card>
+        <title>Topdata</title>
+        <title lang="de-DE">Topdata</title>
+        <component name="topdata-plugin-intro">
+            <name>configIntro</name>
+        </component>
+    </card>
+
+    <card>
         <title>Basic Configuration</title>
         <title lang="de-DE">Grundeinstellungen</title>
         

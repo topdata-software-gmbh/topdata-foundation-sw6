@@ -1,0 +1,152 @@
+$td-color-primary: #0c213b;
+$td-color-accent: #6c9f5b;
+
+.topdata-intro {
+    border: 1px solid #d1d9e0;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #fff;
+}
+
+.topdata-intro__header {
+    background: $td-color-accent;
+    color: #fff;
+    font-size: 16px;
+    font-weight: 700;
+    padding: 12px 24px;
+}
+
+.topdata-intro__body {
+    display: flex;
+    align-items: center;
+    gap: 32px;
+    padding: 24px;
+}
+
+.topdata-intro__content {
+    flex: 1;
+    font-size: 14px;
+    line-height: 1.6;
+
+    p {
+        margin: 0 0 12px;
+    }
+
+    a {
+        color: $td-color-accent;
+        text-decoration: none;
+        font-weight: 600;
+
+        &:hover {
+            text-decoration: underline;
+        }
+    }
+}
+
+.topdata-intro__buttons {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+}
+
+.topdata-intro__logo {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 200px;
+
+    a {
+        display: block;
+        line-height: 0;
+
+        &::after {
+            display: none !important;
+        }
+    }
+
+    svg {
+        width: 100%;
+        height: auto;
+    }
+}
+
+.mt-button,
+.sw-button {
+    .mt-button__content,
+    .sw-button__content {
+        display: inline-block;
+    }
+
+    &.mt-button--contrast,
+    &.sw-button--contrast {
+        background: $td-color-primary;
+
+        .mt-button__content,
+        .sw-button__content {
+            color: #fff;
+        }
+
+        &::after {
+            background-color: #fff;
+        }
+
+        &:hover {
+            background: lighten($td-color-primary, 5%);
+            color: #fff;
+
+            &::after {
+                background-color: #fff;
+            }
+        }
+    }
+
+    &.mt-button--primary,
+    &.sw-button--primary {
+        background: $td-color-accent;
+        border-color: $td-color-accent;
+
+        .mt-button__content,
+        .sw-button__content {
+            color: #fff;
+        }
+
+        &::after {
+            background-color: #fff;
+        }
+
+        &:hover {
+            background: darken($td-color-accent, 5%);
+            border-color: darken($td-color-accent, 5%);
+            color: #fff;
+
+            &::after {
+                background-color: #fff;
+            }
+        }
+    }
+
+    &.mt-button--ghost,
+    &.sw-button--ghost {
+        border-color: $td-color-primary;
+
+        .mt-button__content,
+        .sw-button__content {
+            color: $td-color-primary;
+        }
+
+        &::after {
+            background-color: $td-color-primary;
+        }
+
+        &:hover {
+            border-color: lighten($td-color-primary, 10%);
+            color: lighten($td-color-primary, 10%);
+
+            &::after {
+                background-color: lighten($td-color-primary, 10%);
+            }
+        }
+    }
+}
