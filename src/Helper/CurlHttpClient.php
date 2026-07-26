@@ -103,4 +103,77 @@ class CurlHttpClient
         }
     }
 
+    /**
+     * Fetch multiple URLs concurrently using curl_multi_*.
+     * Returns an array of decoded JSON responses, indexed the same as $urls.
+     * On failure for any single URL (network error, non-200 HTTP, invalid JSON),
+     * the corresponding entry will be null and a debug log emitted — no exception thrown.
+     *
+     * NOTE: no retry is performed. 4xx fail fast. Use get() for single retrying calls.
+     *
+     * @param string[] $urls
+     * @param int $concurrency max simultaneous connections (default 20)
+     * @return array<int, mixed|null> indexed parallel to $urls
+     */
+    public function getMultiple(array $urls, int $concurrency = 20): array
+    {
+        $total = count($urls);
+        if ($total === 0) {
+            return [];
+        }
+
+        $concurrency = max(1, $concurrency);
+        $results = array_fill(0, $total, null);
+
+        // ---- Process URLs in batches of $concurrency (preserve original keys)
+        $batches = array_chunk($urls, $concurrency, true);
+
+        foreach ($batches as $batch) {
+            $mh = curl_multi_init();
+            $handles = [];
+
+            foreach ($batch as $origIdx => $url) {
+                CliLogger::debug("$url");
+                $ch = curl_init($url);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+                curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $this->timeoutSeconds);
+                curl_setopt($ch, CURLOPT_TIMEOUT, $this->timeoutSeconds);
+                curl_multi_add_handle($mh, $ch);
+                $handles[$origIdx] = $ch;
+            }
+
+            do {
+                $status = curl_multi_exec($mh, $active);
+                if ($active && $status === CURLM_OK) {
+                    curl_multi_select($mh);
+                }
+            } while ($active && $status === CURLM_OK);
+
+            foreach ($handles as $origIdx => $ch) {
+                $output = curl_multi_getcontent($ch);
+                $info = curl_getinfo($ch);
+
+                if (curl_errno($ch)) {
+                    CliLogger::warning('HTTP batch cURL error: ' . curl_error($ch));
+                } elseif ((int)$info['http_code'] !== 200) {
+                    CliLogger::warning('HTTP batch non-200: ' . $info['http_code']);
+                } else {
+                    $ret = json_decode($output);
+                    if (json_last_error() === JSON_ERROR_NONE && !isset($ret->error)) {
+                        $results[$origIdx] = $ret;
+                    } else {
+                        CliLogger::warning('HTTP batch invalid JSON or error response');
+                    }
+                }
+
+                curl_multi_remove_handle($mh, $ch);
+                curl_close($ch);
+            }
+
+            curl_multi_close($mh);
+        }
+
+        return $results;
+    }
+
 }
