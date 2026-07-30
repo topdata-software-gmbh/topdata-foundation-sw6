@@ -113,6 +113,7 @@ class CliStyle extends SymfonyStyle
 
         // ---- custom styles, see https://symfony.com/doc/current/console/coloring.html#using-color-styles
         $this->output->getFormatter()->setStyle('fire', new OutputFormatterStyle('red', '#ff0', ['bold', 'blink']));
+        $this->output->getFormatter()->setStyle('yellow', new OutputFormatterStyle('yellow'));
         $this->output->getFormatter()->setStyle('green', new OutputFormatterStyle('green'));
         $this->output->getFormatter()->setStyle('blue', new OutputFormatterStyle('blue'));
         $this->output->getFormatter()->setStyle('gray', new OutputFormatterStyle('gray'));
