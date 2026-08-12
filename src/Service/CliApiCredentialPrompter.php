@@ -6,9 +6,9 @@ namespace Topdata\TopdataFoundationSW6\Service;
 
 use Shopware\Core\System\SystemConfig\SystemConfigException;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
+use Symfony\Component\Console\Exception\ValidationException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Question\Question;
 use Topdata\TopdataFoundationSW6\Helper\CliStyle;
 
 /**
@@ -98,33 +98,32 @@ class CliApiCredentialPrompter
 
         return [
             'baseUrl' => rtrim((string) $baseUrl, '/'),
-            'apiKey'  => $this->_askHidden($cliStyle, 'API Key (sk-...)'),
+            'apiKey'  => $this->_askApiKey($cliStyle),
         ];
     }
 
     /**
-     * Asks a secret value hidden, with visible fallback when the terminal
-     * does not support hidden input (e.g. Windows cmd). Empty values are rejected,
-     * and the key must match the webservice format (starts with "sk-", >= 10 chars).
+     * Asks for the API key. The value is displayed while typing (no hidden input).
+     * Empty values are rejected, and the key must match the webservice format
+     * (starts with "sk-", >= 10 chars).
+     *
+     * IMPORTANT: the validator must return the value on success and throw
+     * ValidationException on errors — Symfony uses the validator's return value
+     * as the answer, so returning null would store an empty key.
      */
-    private function _askHidden(CliStyle $cliStyle, string $prompt): string
+    private function _askApiKey(CliStyle $cliStyle): string
     {
-        $question = new Question($prompt);
-        $question->setHidden(true);
-        $question->setHiddenFallback(true);
-        $question->setValidator(static function (?string $value): ?string {
+        return (string) $cliStyle->ask('API Key (sk-...)', null, static function (?string $value): string {
             $value = trim((string) $value);
             if ($value === '') {
-                return 'Value must not be empty.';
+                throw new ValidationException('API Key must not be empty.');
             }
             if (!str_starts_with($value, 'sk-') || strlen($value) < 10) {
-                return 'API Key must start with "sk-" and be at least 10 characters long.';
+                throw new ValidationException('API Key must start with "sk-" and be at least 10 characters long.');
             }
 
-            return null;
+            return $value;
         });
-
-        return (string) $cliStyle->askQuestion($question);
     }
 
     /**
