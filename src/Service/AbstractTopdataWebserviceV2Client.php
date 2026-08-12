@@ -8,8 +8,6 @@ use Topdata\TopdataFoundationSW6\Helper\CurlHttpClient;
 
 abstract class AbstractTopdataWebserviceV2Client
 {
-    public const API_VERSION = '108';
-
     private CurlHttpClient $curlHttpClient;
     private string $apiBaseUrl = '';
     private string $apiKey = '';
@@ -115,7 +113,7 @@ abstract class AbstractTopdataWebserviceV2Client
 
     /**
      * Builds the full webservice V2 request URL: /v2 path rewriting
-     * (`_` → `-`), api_key auth, mandatory version/filter/language.
+     * (`_` → `-`), api_key auth, mandatory language/filter.
      *
      * 08/2026 created (V2-only rewrite of the legacy _buildUrl)
      */
@@ -123,7 +121,6 @@ abstract class AbstractTopdataWebserviceV2Client
     {
         $params = array_merge($params, [
             'api_key'  => $this->apiKey,
-            'version'  => static::API_VERSION,
             'language' => $language,
             'filter'   => 'all',
         ]);
