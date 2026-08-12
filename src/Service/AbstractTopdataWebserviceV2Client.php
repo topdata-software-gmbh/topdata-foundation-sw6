@@ -113,7 +113,11 @@ abstract class AbstractTopdataWebserviceV2Client
 
     /**
      * Builds the full webservice V2 request URL: /v2 path rewriting
-     * (`_` → `-`), api_key auth, mandatory language/filter.
+     * (`_` → `-`), api_key auth, mandatory language.
+     *
+     * The `filter` param is intentionally NOT injected here: it is only
+     * meaningful for product-payload endpoints and endpoint-specific,
+     * so dedicated clients (e.g. TopFeed) pass it per request.
      *
      * 08/2026 created (V2-only rewrite of the legacy _buildUrl)
      */
@@ -122,7 +126,6 @@ abstract class AbstractTopdataWebserviceV2Client
         $params = array_merge($params, [
             'api_key'  => $this->apiKey,
             'language' => $language,
-            'filter'   => 'all',
         ]);
 
         $path = '/v2' . str_replace('_', '-', $endpoint);
