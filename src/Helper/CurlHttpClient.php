@@ -5,6 +5,7 @@ namespace Topdata\TopdataFoundationSW6\Helper;
 use Exception;
 use Topdata\TopdataFoundationSW6\Exception\WebserviceRequestException;
 use Topdata\TopdataFoundationSW6\Exception\WebserviceResponseException;
+use Topdata\TopdataFoundationSW6\Helper\WebserviceV2Response;
 use Topdata\TopdataFoundationSW6\Util\CliLogger;
 
 /**
@@ -64,13 +65,15 @@ class CurlHttpClient
             // ---- Handle HTTP status codes
             $header = curl_getinfo($ch);
             if ($header['http_code'] != 200) {
+                // ---- v2 errors arrive with a real 4xx/5xx status and a JSON error
+                //      envelope: surface the real message instead of 'HTTP Error: 401'
+                $response = json_decode($output);
+                if (json_last_error() === JSON_ERROR_NONE && isset($response->error)) {
+                    throw new WebserviceResponseException(
+                        WebserviceV2Response::extractErrorMessage($response->error) . ' @topdataconnector webservice error'
+                    );
+                }
                 throw new WebserviceRequestException('HTTP Error: ' . $header['http_code']);
-            }
-
-            // ---- Handle Bad Request responses by removing headers from output
-            if ($header['http_code'] == 400) {
-                $header_size = strpos($output, '{');
-                $output = substr($output, $header_size);
             }
 
             // ---- Clean up and process response
@@ -82,9 +85,11 @@ class CurlHttpClient
                 throw new WebserviceResponseException('Invalid JSON response: ' . json_last_error_msg());
             }
 
-            // check if the webservice returned an error
+            // check if the webservice returned an error (v1 legacy shape: HTTP 200 + {"error":[...]})
             if (isset($ret->error)) {
-                throw new WebserviceResponseException($ret->error[0]->error_message . ' @topdataconnector webservice error');
+                throw new WebserviceResponseException(
+                    WebserviceV2Response::extractErrorMessage($ret->error) . ' @topdataconnector webservice error'
+                );
             }
 
             CliLogger::debug(substr($output, 0, 180) . '...');
@@ -106,8 +111,10 @@ class CurlHttpClient
     /**
      * Fetch multiple URLs concurrently using curl_multi_*.
      * Returns an array of decoded JSON responses, indexed the same as $urls.
-     * On failure for any single URL (network error, non-200 HTTP, invalid JSON),
-     * the corresponding entry will be null and a debug log emitted — no exception thrown.
+     * On failure for any single URL (network error, invalid JSON), the
+     * corresponding entry will be null and a debug log emitted — no exception thrown.
+     * Non-200 responses with a JSON-parseable body (v2 error envelope) are returned
+     * as decoded objects so the caller can unwrap/surface the actual error.
      *
      * NOTE: no retry is performed. 4xx fail fast. Use get() for single retrying calls.
      *
@@ -156,7 +163,14 @@ class CurlHttpClient
                 if (curl_errno($ch)) {
                     CliLogger::warning('HTTP batch cURL error: ' . curl_error($ch));
                 } elseif ((int)$info['http_code'] !== 200) {
-                    CliLogger::warning('HTTP batch non-200: ' . $info['http_code']);
+                    // ---- v2 error envelopes arrive JSON-parseable: return them so the
+                    //      caller can unwrap/surface the error instead of a silent null
+                    $response = json_decode($output);
+                    if (json_last_error() === JSON_ERROR_NONE) {
+                        $results[$origIdx] = $response;
+                    } else {
+                        CliLogger::warning('HTTP batch non-200: ' . $info['http_code']);
+                    }
                 } else {
                     $ret = json_decode($output);
                     if (json_last_error() === JSON_ERROR_NONE && !isset($ret->error)) {

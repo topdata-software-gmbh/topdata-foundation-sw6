@@ -5,6 +5,7 @@ namespace Topdata\TopdataFoundationSW6\Service;
 
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Topdata\TopdataFoundationSW6\Helper\CurlHttpClient;
+use Topdata\TopdataFoundationSW6\Helper\WebserviceV2Response;
 
 abstract class AbstractTopdataWebserviceV2Client
 {
@@ -39,6 +40,9 @@ abstract class AbstractTopdataWebserviceV2Client
      * Performs a lightweight authenticated request against the ping endpoint
      * to verify that the API credentials are valid.
      * Uses a short-timeout client without retries so a failed test fails fast.
+     * v2 errors arrive as 4xx/5xx with a JSON error envelope; CurlHttpClient
+     * throws WebserviceResponseException with the real error message, which
+     * CliApiCredentialPrompter displays to the user.
      *
      * @throws \Throwable when the connection fails or the credentials are rejected
      *
@@ -62,17 +66,24 @@ abstract class AbstractTopdataWebserviceV2Client
     }
 
     /**
+     * Performs a request and unwraps the v2 envelope: returns the payload
+     * (e.g. `->page`, `->data`, `->match` reads keep working); errors throw
+     * WebserviceResponseException with the real error message.
+     *
      * @param string $language ISO-2 language to request (shop-derived, never from config)
      */
     protected function httpGet(string $endpoint, array $params = [], string $language = 'de'): mixed
     {
-        return $this->curlHttpClient->get($this->_buildUrl($endpoint, $params, $language));
+        $response = $this->curlHttpClient->get($this->_buildUrl($endpoint, $params, $language));
+
+        return WebserviceV2Response::unwrap($response);
     }
 
     /**
      * Fetch multiple endpoints concurrently with curl_multi_*.
      * Each entry in $requests must be [endpoint, params] or [endpoint].
      * Returns array indexed parallel to $requests; null on per-request failure.
+     * Each entry is unwrapped like httpGet(): payload returned, error envelopes throw.
      *
      * @param array<int, array{0:string, 1?: array<string, mixed>}> $requests
      * @param int $concurrency max simultaneous connections
@@ -86,7 +97,13 @@ abstract class AbstractTopdataWebserviceV2Client
             $urls[] = $this->_buildUrl($req[0], $req[1] ?? [], $language);
         }
 
-        return $this->curlHttpClient->getMultiple($urls, $concurrency);
+        $responses = $this->curlHttpClient->getMultiple($urls, $concurrency);
+
+        foreach ($responses as $idx => $response) {
+            $responses[$idx] = WebserviceV2Response::unwrap($response);
+        }
+
+        return $responses;
     }
 
     public function setBaseUrl(string $baseUrl): void
