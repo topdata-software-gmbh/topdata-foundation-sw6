@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+### Added
+- `UtilBatchDatabaseOperations`: accumulates `upsertOne()` calls and flushes them as multi-row `INSERT ... ON DUPLICATE KEY UPDATE` statements (auto-flush on row count/byte thresholds; bound parameters for binary-safe UUID handling)
+
 ## [1.5.0] - 2026-08-11
 ### Added
 - `AbstractTopdataWebserviceV2Client` (renamed from `AbstractTopdataWebserviceClient`): V2-only webservice access — `api_key` (sk-...) auth, `/v2` path rewriting (`_` → `-`), per-request `language` parameter (shop-driven, no config language)
