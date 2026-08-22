@@ -10,14 +10,19 @@ use Symfony\Component\Console\Exception\ValidationException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Topdata\TopdataFoundationSW6\Helper\CliStyle;
+use Topdata\TopdataFoundationSW6\Util\UtilApiKeyDeriver;
 
 /**
  * Interactively collects missing API credentials on the CLI, persists them
  * to the plugin configuration and verifies them with a connection test.
  *
- * V2 credentials: API base URL + API key (sk-...). Reusable across all
+ * V2 credentials: API base URL + API key (sk-tdws-...). Reusable across all
  * plugins that talk to the Topdata webservice V2
  * (config keys apiBaseUrl/apiKey are standardized).
+ *
+ * When the v1 credentials of the TopdataConnectorSW6 plugin (apiUid +
+ * apiSecurityKey) are present, the v2 API key is offered to be derived
+ * automatically instead of entering it manually.
  *
  * 08/2026 created
  */
@@ -87,6 +92,10 @@ class CliApiCredentialPrompter
      * Asks for the credentials one-by-one. The API key is entered hidden.
      * On retries, the previously entered base URL is prefilled.
      *
+     * When the v1 credentials of the TopdataConnectorSW6 plugin are present,
+     * the v2 API key is offered to be derived automatically (primary path);
+     * manual entry remains as fallback.
+     *
      * @param array<string, string> $previous previously entered values
      * @return array{baseUrl: string, apiKey: string}
      */
@@ -95,6 +104,19 @@ class CliApiCredentialPrompter
         $cliStyle->section('API Credentials');
 
         $baseUrl = $cliStyle->ask('API Base URL', $previous['baseUrl'] ?? null);
+
+        $derivedKey = UtilApiKeyDeriver::deriveFromConnectorConfig(
+            $this->systemConfigService->get('TopdataConnectorSW6.config')
+        );
+        if ($derivedKey !== '' && $cliStyle->confirm(
+            'Derive v2 API key automatically from your v1 credentials (apiUid/apiSecurityKey)?',
+            true
+        )) {
+            return [
+                'baseUrl' => rtrim((string) $baseUrl, '/'),
+                'apiKey'  => $derivedKey,
+            ];
+        }
 
         return [
             'baseUrl' => rtrim((string) $baseUrl, '/'),

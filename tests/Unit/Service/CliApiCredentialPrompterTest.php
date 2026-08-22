@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Topdata\TopdataFoundationSW6\Tests\Unit\Service;
 
@@ -23,8 +25,8 @@ class CliApiCredentialPrompterTest extends TestCase
     protected function setUp(): void
     {
         $this->configService = new _FakeSystemConfigService([]);
-        $this->client = new _ProbeClient($this->configService);
-        $this->prompter = new CliApiCredentialPrompter($this->configService);
+        $this->client        = new _ProbeClient($this->configService);
+        $this->prompter      = new CliApiCredentialPrompter($this->configService);
     }
 
     public function testValidConfigShortCircuitsWithoutPrompts(): void
@@ -70,7 +72,7 @@ class CliApiCredentialPrompterTest extends TestCase
 
     public function testAbortAfterFailedTestRevertsCredentials(): void
     {
-        $tester = $this->_tester();
+        $tester                     = $this->_tester();
         $this->client->failNextTest = true;
 
         $tester->setInputs([
@@ -84,6 +86,65 @@ class CliApiCredentialPrompterTest extends TestCase
         $this->assertSame([], $this->configService->values, 'credentials must be reverted after aborted attempt');
     }
 
+    public function testInteractiveFlowDerivesKeyFromV1Credentials(): void
+    {
+        $this->configService->setMultiple([
+            'TopdataConnectorSW6.config' => [
+                'apiUid'         => 6,
+                'apiSecurityKey' => 'oateouq974fpby5t6ldf8glzo85mr9t6aebozrox',
+            ],
+        ]);
+
+        $tester = $this->_tester();
+        $tester->setInputs([
+            'y',                                                    // confirm: enter credentials now
+            'https://ws.example.com', 'y',                          // base url + confirm: derive key
+        ]);
+        $tester->execute([], ['interactive' => true]);
+
+        $this->assertSame(Command::SUCCESS, $tester->getStatusCode());
+        $this->assertSame(1, $this->client->testCalls);
+        $this->assertSame(
+            'sk-tdws-EAvAHSJZzYgCc2FptDzJjDHtpFKmYhxXW6cvzHwnRGcvo',
+            $this->configService->values['TestPlugin.config.apiKey']
+        );
+    }
+
+    public function testDeriveOfferCanBeDeclinedForManualEntry(): void
+    {
+        $this->configService->setMultiple([
+            'TopdataConnectorSW6.config' => [
+                'apiUid'         => 6,
+                'apiSecurityKey' => 'oateouq974fpby5t6ldf8glzo85mr9t6aebozrox',
+            ],
+        ]);
+
+        $tester = $this->_tester();
+        $tester->setInputs([
+            'y',                                                    // confirm: enter credentials now
+            'https://ws.example.com', 'n', 'sk-' . str_repeat('a', 32),
+        ]);
+        $tester->execute([], ['interactive' => true]);
+
+        $this->assertSame(Command::SUCCESS, $tester->getStatusCode());
+        $this->assertSame('sk-' . str_repeat('a', 32), $this->configService->values['TestPlugin.config.apiKey']);
+    }
+
+    public function testNoDeriveOfferWithoutV1Credentials(): void
+    {
+        $tester = $this->_tester();
+        // only 4 inputs: if a derive offer appeared, the input stream would
+        // run dry and the command would fail/hang
+        $tester->setInputs([
+            'y',                                                    // confirm: enter credentials now
+            'https://ws.example.com', 'sk-' . str_repeat('a', 32),
+        ]);
+        $tester->execute([], ['interactive' => true]);
+
+        $this->assertSame(Command::SUCCESS, $tester->getStatusCode());
+        $this->assertSame('sk-' . str_repeat('a', 32), $this->configService->values['TestPlugin.config.apiKey']);
+    }
+
     private function _tester(): CommandTester
     {
         return new CommandTester(new _PromptHarnessCommand($this->prompter, $this->client));
@@ -92,7 +153,7 @@ class CliApiCredentialPrompterTest extends TestCase
 
 final class _ProbeClient extends AbstractTopdataWebserviceV2Client
 {
-    public int $testCalls = 0;
+    public int $testCalls     = 0;
     public bool $failNextTest = false;
 
     public function __construct(_FakeSystemConfigService $configService)

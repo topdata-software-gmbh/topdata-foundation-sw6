@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Added
 - `UtilBatchDatabaseOperations`: accumulates `upsertOne()` calls and flushes them as multi-row `INSERT ... ON DUPLICATE KEY UPDATE` statements (auto-flush on row count/byte thresholds; bound parameters for binary-safe UUID handling)
+- `UtilApiKeyDeriver`: derives the Topdata webservice V2 API key (`sk-tdws-...`) deterministically from the v1 credentials (`uid` + `security_key`) — byte-identical to the server-side backfill migration (pure-PHP base-54 encoding, no gmp/bcmath dependency)
+- `AbstractTopdataWebserviceV2Client::reloadConfig()`: when the plugin config holds no `apiKey`, the key is derived on the fly from the TopdataConnectorSW6 v1 credentials (`apiUid`/`apiSecurityKey`) — zero-touch v2 switch for existing connector users
+- `CliApiCredentialPrompter`: offers to derive the v2 API key automatically from the v1 credentials (primary path) when they are present; manual entry remains as fallback
 
 ## [1.5.0] - 2026-08-11
 ### Added

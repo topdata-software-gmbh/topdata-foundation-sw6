@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Topdata\TopdataFoundationSW6\Tests\Unit\Service;
 
@@ -40,6 +42,52 @@ class AbstractTopdataWebserviceV2ClientTest extends TestCase
         $this->assertTrue($client->hasValidConfig(), 'stale in-memory values before reload');
         $client->reloadConfig();
         $this->assertFalse($client->hasValidConfig(), 'reloadConfig must re-read system config');
+    }
+
+    public function testReloadConfigDerivesKeyFromConnectorV1Credentials(): void
+    {
+        $configService = new _FakeSystemConfigService([
+            'TestPlugin.config' => [
+                'apiBaseUrl' => 'https://ws.example.com',
+                'apiKey'     => '',
+            ],
+            'TopdataConnectorSW6.config' => [
+                'apiUid'         => 6,
+                'apiSecurityKey' => 'oateouq974fpby5t6ldf8glzo85mr9t6aebozrox',
+            ],
+        ]);
+        $client = new _FakeWebserviceV2Client($configService);
+
+        $this->assertTrue($client->hasValidConfig(), 'key must be derived from connector v1 credentials');
+        $this->assertSame('sk-tdws-EAvAHSJZzYgCc2FptDzJjDHtpFKmYhxXW6cvzHwnRGcvo', $client->getApiKey());
+    }
+
+    public function testPluginApiKeyTakesPrecedenceOverDerivation(): void
+    {
+        $configService = new _FakeSystemConfigService([
+            'TestPlugin.config' => [
+                'apiBaseUrl' => 'https://ws.example.com',
+                'apiKey'     => 'sk-tdws-' . str_repeat('x', 45),
+            ],
+            'TopdataConnectorSW6.config' => [
+                'apiUid'         => 6,
+                'apiSecurityKey' => 'oateouq974fpby5t6ldf8glzo85mr9t6aebozrox',
+            ],
+        ]);
+        $client = new _FakeWebserviceV2Client($configService);
+
+        $this->assertSame('sk-tdws-' . str_repeat('x', 45), $client->getApiKey());
+    }
+
+    public function testReloadConfigWithoutConnectorCredentialsStaysInvalid(): void
+    {
+        $configService = new _FakeSystemConfigService(['TestPlugin.config' => [
+            'apiBaseUrl' => 'https://ws.example.com',
+            'apiKey'     => '',
+        ]]);
+        $client = new _FakeWebserviceV2Client($configService);
+
+        $this->assertFalse($client->hasValidConfig());
     }
 }
 

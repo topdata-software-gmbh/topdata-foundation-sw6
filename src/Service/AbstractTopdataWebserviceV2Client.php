@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Topdata\TopdataFoundationSW6\Service;
@@ -6,12 +7,13 @@ namespace Topdata\TopdataFoundationSW6\Service;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 use Topdata\TopdataFoundationSW6\Helper\CurlHttpClient;
 use Topdata\TopdataFoundationSW6\Helper\WebserviceV2Response;
+use Topdata\TopdataFoundationSW6\Util\UtilApiKeyDeriver;
 
 abstract class AbstractTopdataWebserviceV2Client
 {
     private CurlHttpClient $curlHttpClient;
     private string $apiBaseUrl = '';
-    private string $apiKey = '';
+    private string $apiKey     = '';
 
     public function __construct(
         private readonly SystemConfigService $systemConfigService,
@@ -25,6 +27,10 @@ abstract class AbstractTopdataWebserviceV2Client
      * Re-reads the plugin configuration from the system config.
      * Required after credentials were changed at runtime (e.g. by CliApiCredentialPrompter).
      *
+     * Zero-touch v2 migration: when this plugin's config holds no apiKey,
+     * the key is derived on the fly from the v1 credentials still present
+     * in the TopdataConnectorSW6 plugin config (apiUid/apiSecurityKey).
+     *
      * 08/2026 created
      */
     public function reloadConfig(): void
@@ -32,7 +38,13 @@ abstract class AbstractTopdataWebserviceV2Client
         $pluginConfig = $this->systemConfigService->get($this->pluginConfigKey);
         if ($pluginConfig) {
             $this->apiBaseUrl = rtrim($pluginConfig['apiBaseUrl'] ?? '', '/') ?? '';
-            $this->apiKey = $pluginConfig['apiKey'] ?? '';
+            $this->apiKey     = $pluginConfig['apiKey'] ?? '';
+        }
+
+        if (empty($this->apiKey)) {
+            $this->apiKey = UtilApiKeyDeriver::deriveFromConnectorConfig(
+                $this->systemConfigService->get('TopdataConnectorSW6.config')
+            );
         }
     }
 
@@ -114,6 +126,15 @@ abstract class AbstractTopdataWebserviceV2Client
     public function getBaseUrl(): string
     {
         return $this->apiBaseUrl;
+    }
+
+    /**
+     * Returns the API key in use — either from the plugin config or derived
+     * from the connector v1 credentials. May be '' when nothing is configured.
+     */
+    public function getApiKey(): string
+    {
+        return $this->apiKey;
     }
 
     /**
