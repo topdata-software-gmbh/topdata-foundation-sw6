@@ -6,7 +6,7 @@ Shared utility library for Topdata Shopware 6 plugins (TopFeed, TopFinder, ...).
 
 - **Plugin class**: `Topdata\TopdataFoundationSW6\TopdataFoundationSW6`
 - **PSR-4 namespace**: `Topdata\TopdataFoundationSW6\` → `src/`
-- **Requires**: `php ^8.2`, `shopware/core 6.7.*`
+- **Requires**: `php ^8.2`, `shopware/core 6.5.* || 6.6.* || 6.7.*` (see `composer.json`)
 - **Consumed by**: `topdata-topfeed-sw6-v9`, `topdata-topfinder-pro-sw6`
 
 ## Migrations (IMPORTANT)
@@ -33,9 +33,12 @@ here.
 
 ## Commands
 
-| Command | Action |
+| Command (cwd) | Action |
 |---|---|
-| `php php-cs-fixer.phar fix` | Fix PHP coding standards (dry-run: add `--dry-run`) |
+| `php php-cs-fixer.phar fix` (plugin root) | Fix PHP coding standards (dry-run: add `--dry-run`) |
+| `./vendor/bin/phpunit --configuration="custom/plugins/topdata-foundation-sw6"` (Shopware root) | Run the unit test suite; see `ai_docs/HOWTO__phpunit.md` |
+
+There is no `composer test` / `composer lint` script — `composer.json` only declares the platform dependency.
 
 ## Coding conventions (PHP)
 
