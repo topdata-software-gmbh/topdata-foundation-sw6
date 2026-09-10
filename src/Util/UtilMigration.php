@@ -105,4 +105,84 @@ class UtilMigration
             self::ensureDefaultConfig($connection, $pluginName, $configKey, $defaultValue);
         }
     }
+
+    /**
+     * Same as ensureDefaultConfig() but OVERWRITES an existing value (upsert):
+     * inserts the default when the key is absent, updates it when present.
+     *
+     * Only touches the global (sales_channel_id NULL) row — per-sales-channel
+     * overrides keep their value.
+     *
+     * NOTE: An `INSERT ... ON DUPLICATE KEY UPDATE` is NOT used here on purpose.
+     * The `uniq.configuration_key__sales_channel_id` unique index does not
+     * deduplicate global rows, because MySQL/MariaDB treat NULLs as distinct
+     * inside unique indexes — two rows with `sales_channel_id IS NULL` do not
+     * collide. Hence existence is checked explicitly.
+     *
+     * example usage:
+     *
+     *       // --- Force a single default value (insert or overwrite) ---
+     *       UtilMigration::forceConfig(
+     *           $connection,
+     *           'TopdataTopFinderProSW6', // plugin's technical name
+     *           'finderBarPosition', // The config key from config.xml
+     *           'belowNavigation' // The default value
+     *       );
+     *
+     * @param Connection $connection The database connection from the migration.
+     * @param string $pluginName The technical name of the plugin (e.g., 'TopdataTopFinderProSW6').
+     * @param string $configKey The specific configuration key (e.g., 'finderBarPosition').
+     * @param mixed $defaultValue The default value to set (will be JSON encoded).
+     */
+    public static function forceConfig(Connection $connection, string $pluginName, string $configKey, mixed $defaultValue): void
+    {
+        $fullConfigKey = sprintf('%s.config.%s', $pluginName, $configKey);
+        $configValue = json_encode(['_value' => $defaultValue]);
+
+        $exists = $connection->executeQuery(
+            'SELECT HEX(id) AS id FROM `system_config` WHERE `configuration_key` = :configKey AND `sales_channel_id` IS NULL LIMIT 1',
+            ['configKey' => $fullConfigKey]
+        )->fetchAssociative();
+
+        if ($exists) {
+            $connection->executeStatement(
+                'UPDATE `system_config` SET `configuration_value` = :configValue, `updated_at` = NOW() WHERE `id` = UNHEX(:id)',
+                ['configValue' => $configValue, 'id' => $exists['id']]
+            );
+
+            return;
+        }
+
+        $connection->executeStatement(
+            "INSERT INTO `system_config` (`id`, `configuration_key`, `configuration_value`, `sales_channel_id`, `created_at`)
+             VALUES (UNHEX(REPLACE(UUID(),'-','')), :configKey, :configValue, NULL, NOW())",
+            ['configKey' => $fullConfigKey, 'configValue' => $configValue]
+        );
+    }
+
+    /**
+     * Same as ensureDefaultConfigs() but OVERWRITES existing values (upsert) —
+     * inserts each default when the key is absent, updates it when present.
+     *
+     *       // --- Force multiple default values at once ---
+     *       UtilMigration::forceConfigs(
+     *           $connection,
+     *           'TopdataTopFinderProSW6', // plugin's technical name
+     *           [
+     *               'finderBarPosition' => 'belowNavigation',
+     *               'anotherConfigKey'  => true
+     *           ]
+     *       );
+     *
+     * @param Connection $connection The database connection from the migration.
+     * @param string $pluginName The technical name of the plugin.
+     * @param array<string, mixed> $configs An associative array where keys are the config keys
+     *                                      and values are their default values.
+     */
+    public static function forceConfigs(Connection $connection, string $pluginName, array $configs): void
+    {
+        foreach ($configs as $configKey => $defaultValue) {
+            self::forceConfig($connection, $pluginName, $configKey, $defaultValue);
+        }
+    }
 }
