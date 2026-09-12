@@ -9,15 +9,42 @@ Shared utility library for Topdata Shopware 6 plugins (TopFeed, TopFinder, ...).
 - **Requires**: `php ^8.2`, `shopware/core 6.5.* || 6.6.* || 6.7.*` (see `composer.json`)
 - **Consumed by**: `topdata-topfeed-sw6-v9`, `topdata-topfinder-pro-sw6`
 
+## Distribution: build-time injection, not the Shopware Store (IMPORTANT)
+
+**This plugin is not distributed through the Shopware Store and is not installed as a runtime
+dependency in production.** On release, `topdata-package-release-builder` (`sw-build`,
+`foundation_injector.py`) injects a *tree-shaken copy* of the used classes into each consumer
+plugin ZIP:
+
+- only the foundation PHP classes that the consumer `use`s (plus their transitive foundation
+  dependencies) are copied;
+- matching service definitions are extracted from `src/Resources/config/services.xml` and injected
+  with rewritten IDs;
+- copied namespaces are rewritten from `Topdata\TopdataFoundationSW6\...` to
+  `Topdata\<ConsumerPlugin>\Foundation\...` and autoloaded from the consumer's `src/Foundation/`;
+- the `topdata/topdata-foundation-sw6` entry is removed from the consumer's built `composer.json`;
+- **not** copied: `src/Migration/` and any other `Resources/` files (`config.xml`, snippets, views,
+  routes).
+
+In development the plugin is installed normally (e.g. into `custom/plugins/`), so classes autoload
+under their original namespace.
+
+Consequences for code placed here:
+
+- **No `config.xml`, no own SystemConfig.** Never read `TopdataFoundationSW6.config.*` via
+  `SystemConfigService` — those keys only exist while the dev plugin is installed, are namespaced
+  per plugin, and there is no shared/global Shopware config. Accept settings as constructor or
+  method parameters instead. Consumer-facing config stays in the consumer's `config.xml`; truly
+  deployment-level values (e.g. an external service URL) belong in environment variables
+  (`%env(...)%`), not in foundation.
+- **Keep everything stateless.** Every consumer gets its own class copy under its own namespace —
+  no shared class identity, no cross-plugin service instance, no runtime state registry.
+
 ## Migrations (IMPORTANT)
 
-**Do NOT put database migrations in this plugin.**
-
-On release, `topdata-package-release-builder` (`sw-build`, `foundation_injector.py`) merges foundation
-code into each consumer plugin by *tree-shaking*: it copies only the foundation PHP classes that are
-`use`d by the consumer (plus their service definitions from `src/Resources/config/services.xml`). It
-**never** copies `src/Migration/` — a migration placed here would silently be absent from the released
-ZIP and the table would never be created.
+**Do NOT put database migrations in this plugin** — `src/Migration/` is never copied by the
+injector (see above), so a migration placed here would silently be absent from the released ZIP
+and the table would never be created.
 
 Instead:
 
