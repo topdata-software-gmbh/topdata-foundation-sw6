@@ -3,6 +3,16 @@ import './style.scss';
 
 const { Component } = Shopware;
 
+/**
+ * Base URL of the Topdata documentation site.
+ *
+ * The manual URL of a plugin is derived from its class name, because that is how the docs
+ * site derives the slug: the last segment of `extra.shopware-plugin-class`
+ * (`TopdataTopFeedSW6`) lowercased (`topdatatopfeedsw6`). Keep this in sync with the docs
+ * site when the domain moves.
+ */
+const DOC_BASE_URL = 'https://docs-v2.topinfra.de';
+
 Component.register('topdata-plugin-intro', {
     template,
 
@@ -33,9 +43,9 @@ Component.register('topdata-plugin-intro', {
                 return this.docUrl;
             }
             if (this.pluginName) {
-                return `https://topdata.de/dokumentation/${this.pluginName}`;
+                return `${DOC_BASE_URL}/manuals/${this.pluginName.toLowerCase()}/`;
             }
-            return 'https://topdata.de';
+            return `${DOC_BASE_URL}/`;
         },
     },
 
