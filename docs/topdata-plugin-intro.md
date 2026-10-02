@@ -41,9 +41,7 @@ Pass a `pluginName` to auto-generate a documentation URL in the format `https://
     <title lang="de-DE">Topdata</title>
     <component name="topdata-plugin-intro">
         <name>configIntro</name>
-        <config>
-            <pluginName>MyPluginName</pluginName>
-        </config>
+        <pluginName>MyPluginName</pluginName>
     </component>
 </card>
 ```
@@ -60,12 +58,15 @@ Pass a `docUrl` to override the documentation link entirely. This takes preceden
     <title lang="de-DE">Topdata</title>
     <component name="topdata-plugin-intro">
         <name>configIntro</name>
-        <config>
-            <docUrl>https://docs.example.com/my-plugin</docUrl>
-        </config>
+        <docUrl>https://docs.topinfra.de/manuals/topdatacompareproducts/</docUrl>
     </component>
 </card>
 ```
+
+This is what plugins with a manual on the docs site should use: `docUrl` points at
+`https://docs.topinfra.de/manuals/<slug>/`, where `<slug>` is the **lowercased plugin class
+name** (last segment of `extra.shopware-plugin-class`), e.g. `TopdataCompareProducts` →
+`/manuals/topdatacompareproducts/`.
 
 ### With both props
 
@@ -74,12 +75,14 @@ When both are provided, `docUrl` wins — `pluginName` is ignored for the link.
 ```xml
 <component name="topdata-plugin-intro">
     <name>configIntro</name>
-    <config>
-        <pluginName>MyPlugin</pluginName>
-        <docUrl>https://docs.example.com/custom-path</docUrl>
-    </config>
+    <pluginName>MyPlugin</pluginName>
+    <docUrl>https://docs.topinfra.de/manuals/myplugin/</docUrl>
 </component>
 ```
+
+> **Props are direct children of `<component>`, not wrapped in `<config>`.** Shopware passes
+> them as component attributes; anything nested in a `<config>` element is ignored and the
+> component silently falls back to `https://topdata.de`.
 
 ## Props
 
@@ -155,5 +158,7 @@ The foundation plugin itself uses the banner above its own config fields:
 
 1. Ensure the foundation plugin (`topdata/topdata-foundation-sw6`) is a Composer dependency.
 2. Add a `<card>` with the `topdata-plugin-intro` component as the **first card** in your `config.xml`.
-3. Optionally set `pluginName` or `docUrl` for the correct documentation link.
+3. Set `docUrl` to `https://docs.topinfra.de/manuals/<lowercased plugin class>/` if the plugin
+   has a manual; otherwise omit it (or set `pluginName`) and the button falls back to
+   `https://topdata.de`.
 4. Add subsequent cards for your plugin's own config fields below it.
