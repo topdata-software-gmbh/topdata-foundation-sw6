@@ -5,15 +5,21 @@ declare(strict_types=1);
 namespace Topdata\TopdataFoundationSW6\Service;
 
 use Shopware\Core\System\SystemConfig\SystemConfigService;
+use Topdata\TopdataFoundationSW6\Exception\WebserviceRequestException;
 use Topdata\TopdataFoundationSW6\Helper\CurlHttpClient;
 use Topdata\TopdataFoundationSW6\Helper\WebserviceV2Response;
 use Topdata\TopdataFoundationSW6\Util\UtilApiKeyDeriver;
 
 abstract class AbstractTopdataWebserviceV2Client
 {
+    private const HEALTHZ_PATH                    = '/healthz';
+    private const HEALTHZ_CONNECT_TIMEOUT_SECONDS = 5;
+    private const HEALTHZ_TIMEOUT_SECONDS         = 10;
+
     private CurlHttpClient $curlHttpClient;
     private string $apiBaseUrl = '';
     private string $apiKey     = '';
+    private bool $healthy      = false;
 
     public function __construct(
         private readonly SystemConfigService $systemConfigService,
@@ -35,6 +41,8 @@ abstract class AbstractTopdataWebserviceV2Client
      */
     public function reloadConfig(): void
     {
+        $this->healthy = false;
+
         $pluginConfig = $this->systemConfigService->get($this->pluginConfigKey);
         if ($pluginConfig) {
             $this->apiBaseUrl = rtrim($pluginConfig['apiBaseUrl'] ?? '', '/') ?? '';
@@ -75,6 +83,58 @@ abstract class AbstractTopdataWebserviceV2Client
     protected function getPingEndpoint(): string
     {
         return '/revision';
+    }
+
+    /**
+     * Pings the webservice's unauthenticated /healthz endpoint.
+     *
+     * Intended as a fast fail-fast preflight before a command starts talking
+     * to the webservice. Uses short timeouts and no retries, and does not
+     * require credentials. A successful check is cached for the lifetime of
+     * this client instance, so nested commands (e.g. an import-all command
+     * calling its sub-commands) only ping once.
+     *
+     * @throws WebserviceRequestException when the base URL is missing, the request fails or the response is not 2xx
+     *
+     * 11/2026 created
+     */
+    public function assertHealthy(): void
+    {
+        if ($this->healthy) {
+            return;
+        }
+
+        $baseUrl = rtrim($this->apiBaseUrl, '/');
+        if ($baseUrl === '') {
+            throw new WebserviceRequestException('Topdata webservice base URL is not configured. Please set it in the plugin configuration.');
+        }
+
+        $url = $baseUrl . self::HEALTHZ_PATH;
+
+        $ch = curl_init($url);
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_CONNECTTIMEOUT => self::HEALTHZ_CONNECT_TIMEOUT_SECONDS,
+            CURLOPT_TIMEOUT        => self::HEALTHZ_TIMEOUT_SECONDS,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_MAXREDIRS      => 3,
+        ]);
+
+        curl_exec($ch);
+        $curlErrno = curl_errno($ch);
+        $curlError = curl_error($ch);
+        $httpCode  = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+
+        if ($curlErrno !== 0) {
+            throw new WebserviceRequestException("Topdata webservice health check failed for $url: $curlError");
+        }
+
+        if ($httpCode < 200 || $httpCode >= 300) {
+            throw new WebserviceRequestException("Topdata webservice health check failed for $url: HTTP $httpCode");
+        }
+
+        $this->healthy = true;
     }
 
     /**
@@ -120,6 +180,7 @@ abstract class AbstractTopdataWebserviceV2Client
 
     public function setBaseUrl(string $baseUrl): void
     {
+        $this->healthy    = false;
         $this->apiBaseUrl = $baseUrl;
     }
 

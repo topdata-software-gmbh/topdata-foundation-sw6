@@ -14,6 +14,7 @@ use Symfony\Component\Console\Output\NullOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\ErrorHandler\ErrorHandler;
 use Topdata\TopdataFoundationSW6\Helper\CliStyle;
+use Topdata\TopdataFoundationSW6\Service\AbstractTopdataWebserviceV2Client;
 use Topdata\TopdataFoundationSW6\Service\PluginHelperService;
 use Topdata\TopdataFoundationSW6\Util\CliLogger;
 use Topdata\TopdataFoundationSW6\Util\UtilDict;
@@ -235,5 +236,27 @@ abstract class AbstractTopdataCommand extends Command
     {
         $topicPart = $this->_topic ? ' topic: ' . $this->_topic : '';
         CliLogger::getCliStyle()->done('DONE ' . $this->getName() . $topicPart . ' [' . UtilFormatter::formatBytes(memory_get_peak_usage(true)) . ' / ' . UtilFormatter::formatDuration(microtime(true) - $this->_startTime, 2) . ']');
+    }
+
+    /**
+     * Fail-fast preflight for commands that use the webservice.
+     *
+     * Pings /healthz via the client and logs the error if unreachable, so the
+     * caller can simply return FAILURE without repeating the try/catch.
+     *
+     * 11/2026 created
+     */
+    protected function ensureWebserviceHealthy(AbstractTopdataWebserviceV2Client $client): bool
+    {
+        try {
+            $client->assertHealthy();
+
+            return true;
+        } catch (\Throwable $e) {
+            CliLogger::error($e->getMessage());
+            CliLogger::writeln('Abort.');
+
+            return false;
+        }
     }
 }

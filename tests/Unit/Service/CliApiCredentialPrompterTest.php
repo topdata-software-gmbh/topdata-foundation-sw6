@@ -161,7 +161,7 @@ final class _ProbeClient extends AbstractTopdataWebserviceV2Client
         parent::__construct($configService, 'TestPlugin.config');
     }
 
-    public function testConnection(): void
+    public function testConnection(string $language = 'de'): void
     {
         $this->testCalls++;
         if ($this->failNextTest) {

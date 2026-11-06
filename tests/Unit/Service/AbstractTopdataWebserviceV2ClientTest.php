@@ -89,6 +89,16 @@ class AbstractTopdataWebserviceV2ClientTest extends TestCase
 
         $this->assertFalse($client->hasValidConfig());
     }
+
+    public function testAssertHealthyRequiresBaseUrl(): void
+    {
+        $client = new _FakeWebserviceV2Client(new _FakeSystemConfigService(['TestPlugin.config' => []]));
+
+        $this->expectException(\Topdata\TopdataFoundationSW6\Exception\WebserviceRequestException::class);
+        $this->expectExceptionMessage('base URL is not configured');
+
+        $client->assertHealthy();
+    }
 }
 
 final class _FakeSystemConfigService extends SystemConfigService
@@ -108,18 +118,45 @@ final class _FakeSystemConfigService extends SystemConfigService
     public function set(string $key, $value, ?string $salesChannelId = null): void
     {
         $this->values[$key] = $value;
+
+        $lastDot = strrpos($key, '.');
+        if ($lastDot === false) {
+            return;
+        }
+
+        $configKey     = substr($key, 0, $lastDot);
+        $isConfigArray = isset($this->values[$configKey]) && is_array($this->values[$configKey]);
+        if ($isConfigArray || str_ends_with($configKey, '.config')) {
+            $this->values[$configKey] ??= [];
+            if (is_array($this->values[$configKey])) {
+                $this->values[$configKey][substr($key, $lastDot + 1)] = $value;
+            }
+        }
     }
 
     public function setMultiple(array $values, ?string $salesChannelId = null): void
     {
         foreach ($values as $key => $value) {
-            $this->values[$key] = $value;
+            $this->set($key, $value, $salesChannelId);
         }
     }
 
     public function delete(string $key, ?string $salesChannelId = null): void
     {
         unset($this->values[$key]);
+
+        $lastDot = strrpos($key, '.');
+        if ($lastDot === false) {
+            return;
+        }
+
+        $configKey = substr($key, 0, $lastDot);
+        if (isset($this->values[$configKey]) && is_array($this->values[$configKey])) {
+            unset($this->values[$configKey][substr($key, $lastDot + 1)]);
+            if ($this->values[$configKey] === []) {
+                unset($this->values[$configKey]);
+            }
+        }
     }
 }
 
